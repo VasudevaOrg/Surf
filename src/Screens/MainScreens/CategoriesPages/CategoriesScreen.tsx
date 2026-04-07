@@ -64,6 +64,10 @@ const decodeHTMLEntities = (text: string) => {
   return text.replace(/&amp;/g, '&');
 };
 
+const toHttps = (url: string): string => {
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
 const CategoriesScreen: React.FC = memo(() => {
   const dispatch = useDispatch();
   const [searchText, setSearchText] = useState('');
@@ -351,7 +355,7 @@ const CategoriesScreen: React.FC = memo(() => {
                     title={decodeHTMLEntities(sub.category)}
                     imageSource={
                       sub.image_url
-                        ? { uri: sub.image_url }
+                        ? { uri: toHttps(sub.image_url) }
                         : require('../../../assets/images/noProductImageAvailable.png')
                     }
                     onPress={() =>

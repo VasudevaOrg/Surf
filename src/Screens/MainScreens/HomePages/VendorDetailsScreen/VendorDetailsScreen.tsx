@@ -33,6 +33,10 @@ import {
 
 const MemoizedProductCard = React.memo(ProductCard);
 
+const toHttps = (url: string): string => {
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
 const VendorDetailsScreen: React.FC<VendorDetailsScreenProps> = ({ route }) => {
   const { vendorId, vendorName, isVendor } = route.params;
   const navigation = useNavigation<any>();
@@ -72,7 +76,7 @@ const VendorDetailsScreen: React.FC<VendorDetailsScreenProps> = ({ route }) => {
           setVendorData({
             company_id: v.company_id,
             company: decodeHTMLEntities(v.company),
-            image_url: v.image_url || '',
+            image_url: toHttps(v.image_url || ''),
             company_description: decodeHTMLEntities(v.company_description),
             average_rating: v.average_rating || '0.0',
             discussion: v.discussion,
@@ -184,9 +188,9 @@ const VendorDetailsScreen: React.FC<VendorDetailsScreenProps> = ({ route }) => {
             (item: any) => ({
               id: item.product_id,
               imageSource: item.main_pair?.detailed?.image_path
-                ? { uri: item.main_pair.detailed.image_path }
+                ? { uri: toHttps(item.main_pair.detailed.image_path) }
                 : item.image_url
-                  ? { uri: item.image_url }
+                  ? { uri: toHttps(item.image_url) }
                   : require('../../../../assets/images/productCardDemo.png'),
               title: decodeHTMLEntities(item.product),
               discountedPrice: parseFloat(item.price) || 0,

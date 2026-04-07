@@ -842,6 +842,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
               renderItem={renderSimilarProductItem}
               keyExtractor={item => item.id}
               horizontal
+              nestedScrollEnabled
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.flatListContentContainer}
             />
@@ -875,6 +876,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
               renderItem={renderVariationItem}
               keyExtractor={item => item.id}
               horizontal
+              nestedScrollEnabled
               showsHorizontalScrollIndicator={false}
             />
           </View>
@@ -969,6 +971,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
             keyExtractor={keyExtractorById}
             extraData={wishlistItems}
             horizontal
+            nestedScrollEnabled
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.horizontalListContainer}
           />

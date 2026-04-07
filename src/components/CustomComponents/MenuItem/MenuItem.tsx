@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, View, Image } from 'react-native';
+import { TouchableOpacity, View, Image, StyleProp, ViewStyle } from 'react-native';
 import { Typography } from '../../MainComponents/Typography/Typography';
 import { TypographyVariant } from '../../MainComponents/Typography/Typography.types';
 import { styles } from './MenuItem.styles';
@@ -24,13 +24,12 @@ export const MenuItem = ({
   leftIconBackgroundColor,
   showBottomBorder = false,
   isLastItem = false,
+  numberOfLines = 1,
 }: MenuItemProps) => {
-  const leftIconStyles = [
+  const leftIconStyles: StyleProp<ViewStyle> = [
     styles.leftIconContainer,
     leftIconContainerStyle,
-    leftIconBackgroundColor && {
-      backgroundColor: leftIconBackgroundColor,
-    },
+    leftIconBackgroundColor ? { backgroundColor: leftIconBackgroundColor } : null,
   ];
 
   return (
@@ -54,17 +53,19 @@ export const MenuItem = ({
         ) : leftIcon ? (
           <View style={leftIconStyles}>{leftIcon}</View>
         ) : null}
-        <View style={{ gap: 2 }}>
+        <View style={{ gap: 2, flex: 1 }}>
           <Typography
             variant={variant}
             text={label}
             customTextStyles={[styles.labelText, textStyle]}
+            numberOfLines={numberOfLines}
           />
           {subtitle && (
             <Typography
               variant={TypographyVariant.LSMALL_REGULAR}
               text={subtitle}
               customTextStyles={styles.subtitleText}
+              numberOfLines={numberOfLines}
             />
           )}
         </View>

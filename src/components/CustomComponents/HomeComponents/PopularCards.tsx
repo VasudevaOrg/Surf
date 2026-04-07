@@ -14,6 +14,10 @@ import { getScreenHeight, getScreenWidth } from '../../../helpers/screenSize';
 import { Typography } from '../../MainComponents/Typography/Typography';
 import { TypographyVariant } from '../../MainComponents/Typography/Typography.types';
 
+const toHttps = (url: string): string => {
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
 export interface PopularCardData {
   id: string;
   image: ImageSourcePropType | string;
@@ -72,7 +76,7 @@ const PopularCards: React.FC<PopularCardsProps> = ({
 
   const renderCard = (item: PopularCardData) => {
     const imageSource =
-      typeof item.image === 'string' ? { uri: item.image } : item.image;
+      typeof item.image === 'string' ? { uri: toHttps(item.image) } : item.image;
 
     return (
       <TouchableOpacity

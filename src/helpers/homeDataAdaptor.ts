@@ -1,10 +1,14 @@
 import { HomeLayoutResponse, LayoutBlock } from '../types/homeLayout';
 
+const toHttps = (url: string): string => {
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
 const transformBannerItem = (item: any, index: number) => {
   const hasImage = !!item.image_url && item.image_url.trim() !== '';
   return {
     id: item.banner_id || `banner-${index}`,
-    imageUrl: hasImage ? item.image_url : undefined,
+    imageUrl: hasImage ? toHttps(item.image_url) : undefined,
     source: hasImage ? undefined : require('../assets/images/mainBanner.png'),
     banner_type: item.banner_type,
     object_id: item.object_id,
@@ -27,7 +31,7 @@ export const transformHomeData = (apiData: any) => {
           id: item.category_id || `cat-${index}`,
           title: item.category,
           imageSource: item.image_url
-            ? { uri: item.image_url }
+            ? { uri: toHttps(item.image_url) }
             : require('../assets/images/demo1.png'),
         }));
         break;
@@ -37,9 +41,9 @@ export const transformHomeData = (apiData: any) => {
           return {
             id: item.product_id || `prod-${index}`,
             imageSource: item.image_url
-              ? { uri: item.image_url }
+              ? { uri: toHttps(item.image_url) }
               : item.main_pair?.detailed?.image_path
-                ? { uri: item.main_pair.detailed.image_path }
+                ? { uri: toHttps(item.main_pair.detailed.image_path) }
                 : require('../assets/images/productCardDemo.png'),
             title: item.product,
             discountedPrice: item.price ? parseFloat(item.price) : 0,
@@ -62,7 +66,7 @@ export const transformHomeData = (apiData: any) => {
           return {
             id: item.variant_id || `brand-${index}`,
             image: hasImage
-              ? item.image_url
+              ? toHttps(item.image_url)
               : require('../assets/images/sponsoredCardImage1.png'),
             title: item.variant,
             subTitle: '',
@@ -78,7 +82,7 @@ export const transformHomeData = (apiData: any) => {
             id: item.company_id || `vendor-${index}`,
             title: item.company,
             image: hasImage
-              ? item.image_url
+              ? toHttps(item.image_url)
               : require('../assets/images/demo1.png'),
             subTitle: item.email || '',
           };
@@ -102,7 +106,7 @@ export const transformHomeData = (apiData: any) => {
               id: item.card_id || `promo-${index}`,
               title: item.card_name,
               description: item.description,
-              imageUrl: imagePath,
+              imageUrl: imagePath ? toHttps(imagePath) : undefined,
               banner_type: item.type,
               object_id: item.object_id,
             };
@@ -115,15 +119,18 @@ export const transformHomeData = (apiData: any) => {
           id: item.id || `popular-${index}`,
           title: item.title,
           subTitle: item.sub_title || item.subtitle || '',
-          image: item.image_url || require('../assets/images/popularPicks.png'),
+          image: item.image_url
+            ? toHttps(item.image_url)
+            : require('../assets/images/popularPicks.png'),
         }));
         break;
 
       case 'rocket_deals':
         transformedData = data.map((item: any, index: number) => ({
           id: item.product_id || `rocket-${index}`,
-          image:
-            item.image_url || require('../assets/images/productCardDemo.png'),
+          image: item.image_url
+            ? toHttps(item.image_url)
+            : require('../assets/images/productCardDemo.png'),
         }));
         break;
 

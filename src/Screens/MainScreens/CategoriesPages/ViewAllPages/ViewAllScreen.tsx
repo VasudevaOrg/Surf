@@ -119,6 +119,11 @@ import { navigate } from '../../../../utils/navigationref';
 import { getScreenWidth } from '../../../../helpers/screenSize';
 import ScreenWrapper from '../../../../components/CustomComponents/ScreenWrapper/ScreenWrapper';
 
+const toHttps = (url: string): string => {
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
+
 const ViewAllScreen: React.FC = () => {
   const route =
     useRoute<
@@ -207,7 +212,7 @@ const ViewAllScreen: React.FC = () => {
                 title={sub.category}
                 imageSource={
                   sub.image_url
-                    ? { uri: sub.image_url }
+                    ? { uri: toHttps(sub.image_url) }
                     : require('../../../../assets/images/noProductImageAvailable.png')
                 }
                 onPress={() => handleCategoryPress(sub)}

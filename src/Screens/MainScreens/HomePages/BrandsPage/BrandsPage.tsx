@@ -6,10 +6,15 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import {FlashList} from '@shopify/flash-list';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
-import {FlashList} from '@shopify/flash-list';
+
+const toHttps = (url: string): string => {
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
 
 import {VendorCard} from '../../../../components/CustomComponents/VendorCard/VendorCard';
 import {Header} from '../../../../components/CustomComponents/Header/Header';
@@ -168,6 +173,7 @@ const BrandsPage: React.FC = ({route}: any) => {
         <FlashList
           key={`${type}-${filteredBrands.length}`}
           data={filteredBrands}
+          estimatedItemSize={80}
           renderItem={({item}: {item: any}) => {
             if (isVendors) {
               return (
@@ -199,7 +205,7 @@ const BrandsPage: React.FC = ({route}: any) => {
                 <View style={styles.brandImageContainer}>
                   {item.image_url ? (
                     <Image
-                      source={{uri: item.image_url}}
+                      source={{uri: toHttps(item.image_url)}}
                       style={styles.brandImage}
                     />
                   ) : (
@@ -221,19 +227,14 @@ const BrandsPage: React.FC = ({route}: any) => {
           }}
           keyExtractor={(item: any) => item.brand_id.toString()}
           numColumns={isVendors ? 1 : 3}
-          // @ts-ignore
-          estimatedItemSize={isVendors ? 250 : 150}
-          contentContainerStyle={[
-            styles.scrollContent,
-            {
-              paddingBottom: getScreenHeight(4),
-              paddingHorizontal: getScreenWidth(4),
-            },
-            !isVendors && {
-              backgroundColor: ColorPalette.WHITE,
+          contentContainerStyle={{
+            paddingBottom: getScreenHeight(4),
+            paddingHorizontal: getScreenWidth(4),
+            ...((!isVendors) && {
+              backgroundColor: ColorPalette.WHITE as string,
               borderRadius: BorderRadius.Small,
-            },
-          ]}
+            }),
+          }}
           showsVerticalScrollIndicator={false}
         />
       )}

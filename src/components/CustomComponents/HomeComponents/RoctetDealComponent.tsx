@@ -15,6 +15,10 @@ import { Typography } from '../../MainComponents/Typography/Typography';
 import { TypographyVariant } from '../..//MainComponents/Typography/Typography.types';
 import InfoRightIcon from '../../..//assets/icons/InfoRightIcon';
 
+const toHttps = (url: string): string => {
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
 interface RocketDealProp {
   imageSource: ImageSourcePropType | string;
   title: string;
@@ -35,7 +39,7 @@ const RocketDealComponent: React.FC<RocketDealProp> = ({
 
   const renderedImage = React.useMemo(() => {
     if (typeof imageSource === 'string') {
-      return <Image source={{ uri: imageSource }} style={styles.image} />;
+      return <Image source={{ uri: toHttps(imageSource) }} style={styles.image} />;
     }
     return <Image source={imageSource} style={styles.image} />;
   }, [imageSource]);

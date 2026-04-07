@@ -14,6 +14,10 @@ import { getScreenHeight, getScreenWidth } from '../../../helpers/screenSize';
 import { Typography } from '../../MainComponents/Typography/Typography';
 import { TypographyVariant } from '../../MainComponents/Typography/Typography.types';
 
+const toHttps = (url: string): string => {
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
 interface SponsoredBrand {
   id: string;
   image: ImageSourcePropType | string;
@@ -64,7 +68,7 @@ const SponsoredCard: React.FC<SponsoredCardProps> = ({
 
   const renderBrand = (brand: SponsoredBrand) => {
     const imageSource =
-      typeof brand.image === 'string' ? { uri: brand.image } : brand.image;
+      typeof brand.image === 'string' ? { uri: toHttps(brand.image) } : brand.image;
 
     return (
       <TouchableOpacity

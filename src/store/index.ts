@@ -47,6 +47,9 @@ export const store = configureStore({
   reducer: persistedReducer,
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
+      // Disabled: large persisted state (cart/wishlist) causes >32ms checks in dev.
+      // This middleware is already disabled in production builds.
+      immutableCheck: false,
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },

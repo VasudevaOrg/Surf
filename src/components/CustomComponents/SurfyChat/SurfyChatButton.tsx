@@ -73,14 +73,9 @@ const SurfyChatButton: React.FC<SurfyChatButtonProps> = ({onPress}) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 90, // Above tab bar
+    bottom: 90,
     right: 20,
     zIndex: 9999,
-    shadowColor: ColorPalette.PURPLE_200 as string,
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
   },
   button: {
     backgroundColor: ColorPalette.PURPLE_200 as string,
@@ -92,6 +87,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.3)',
+    // Shadow on the solid-background element (avoids RCTView shadow warning)
+    shadowColor: ColorPalette.PURPLE_200 as string,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   content: {
     flexDirection: 'row',

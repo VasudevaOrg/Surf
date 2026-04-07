@@ -60,6 +60,7 @@ export const ProductsGrid = React.memo(
         renderItem={renderProduct}
         keyExtractor={item => String(item.id)}
         numColumns={2}
+        estimatedItemSize={220}
         showsVerticalScrollIndicator={false}
       />
     );

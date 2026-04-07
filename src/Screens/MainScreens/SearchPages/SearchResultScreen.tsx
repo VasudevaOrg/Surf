@@ -788,12 +788,7 @@ const SearchResultScreen = ({ route }: any) => {
     ({ item, index }: any) => {
       const isLeftColumn = index % 2 === 0;
       return (
-        <View
-          style={[
-            styles.productCardWrapper,
-            index % 2 === 0 ? { marginRight: 12 } : {},
-            { marginBottom: 12 },
-          ]}>
+        <View style={styles.productCardWrapper}>
           <ProductCard
             id={item.id.toString()}
             testID={String(item.id)}
@@ -885,7 +880,6 @@ const SearchResultScreen = ({ route }: any) => {
       ) : (
         <View style={{ flex: 1, backgroundColor: ColorPalette.WHITE }}>
           <FlashList
-            key="flashlist-products"
             data={
               hasSubmittedSearch &&
                 (searchText ||
@@ -899,14 +893,13 @@ const SearchResultScreen = ({ route }: any) => {
             keyExtractor={item => item.id.toString()}
             renderItem={renderItem}
             numColumns={2}
-            contentContainerStyle={[
-              styles.resultContainer,
-              {
-                paddingTop: 0,
-                paddingBottom: getScreenHeight(2),
-                backgroundColor: ColorPalette.WHITE,
-              },
-            ]}
+            estimatedItemSize={220}
+            contentContainerStyle={{
+              paddingHorizontal: 6,
+              paddingTop: 6,
+              paddingBottom: getScreenHeight(2),
+              backgroundColor: ColorPalette.WHITE as string,
+            }}
             ListHeaderComponent={
               hasSubmittedSearch &&
                 (searchText ||

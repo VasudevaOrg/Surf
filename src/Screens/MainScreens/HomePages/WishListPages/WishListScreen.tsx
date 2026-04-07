@@ -1,13 +1,11 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import {
   View,
-  ScrollView,
   ActivityIndicator,
   Platform,
-  ToastAndroid,
-  StatusBar,
   Animated,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import SearchIcon from '../../../../assets/icons/SearchIcon';
 import ColorPalette from '../../../../config/ColorPalette';
 import ArrowLeftIcon from '../../../../assets/icons/ArrowLeft';
@@ -16,7 +14,7 @@ import { goBack, navigate } from '../../../../utils/navigationref';
 import { TypographyVariant } from '../../../../components/MainComponents/Typography/Typography.types';
 import { getScreenHeight, getScreenWidth } from '../../../../helpers/screenSize';
 import { styles } from './WishListScreen.styles';
-import { ProductsGrid } from '../../../../components/CustomComponents/ProductsGrid';
+import ProductCard from '../../../../components/CustomComponents/SearchComponents/SearchResultCardComponent/ProductCard';
 import { API_ENDPOINTS } from '../../../../config/ApiConfig';
 import EmptyComponent from '../../../../components/CustomComponents/EmptyComponent';
 import { addToCart } from '../../../../services/CartService';
@@ -34,6 +32,11 @@ import { ToastMessages } from '../../../../components/MainComponents/Toast/Toast
 import { showToast } from '../../../../components/MainComponents/Toast/ToastHelper';
 import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
+
+const toHttps = (url: string): string => {
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
 
 const WishListScreen = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -98,9 +101,9 @@ const WishListScreen = () => {
         id: item.product_id,
         cart_id: item.wishlist_id || item.item_id, // Map wishlist_id to cart_id for removal logic
         imageSource: item.main_pair?.detailed?.image_path
-          ? { uri: item.main_pair.detailed.image_path }
+          ? { uri: toHttps(item.main_pair.detailed.image_path) }
           : item.image_url
-            ? { uri: item.image_url }
+            ? { uri: toHttps(item.image_url) }
             : require('../../../../assets/images/productCardDemo.png'),
         title: item.product,
         discountedPrice: parseFloat(item.price) || 0,
@@ -269,11 +272,60 @@ const WishListScreen = () => {
     product.title.toLowerCase().includes(searchText.toLowerCase()),
   );
 
+  const renderWishlistItem = useCallback(
+    ({ item, index }: { item: any; index: number }) => (
+      <View
+        style={{
+          flex: 1,
+          margin: 6,
+          backgroundColor: ColorPalette.WHITE,
+          borderRadius: 8,
+          overflow: 'hidden',
+        }}>
+        <ProductCard
+          buttonText={'Add'}
+          testID={String(item.id)}
+          imageSource={item.imageSource}
+          title={item.title}
+          discountedPrice={item.discountedPrice}
+          originalPrice={item.originalPrice}
+          rating={item.rating}
+          reviewCount={item.reviewCount}
+          deliveryInfo={item.deliveryInfo}
+          isFavorite={favorites[item.id]}
+          onToggleFavorite={() => toggleFavorite(item.id)}
+          onAddToCart={() => handleAddToCart(item.id)}
+          onCardPress={() => handleCardPress(item.id)}
+          onImage={true}
+          titleVariant={TypographyVariant.LMEDIUM_SEMIBOLD}
+          priceVariant={TypographyVariant.LMEDIUM_SEMIBOLD}
+        />
+      </View>
+    ),
+    [favorites, toggleFavorite, handleAddToCart, handleCardPress],
+  );
+
+  const ListEmptyComponent = useMemo(() => (
+    <View style={styles.emptyContainer}>
+      <EmptyComponent
+        imageSource={require('../../../../assets/images/favourites.png')}
+        title="Nothing on your wishlist yet"
+        customContainerStyle={styles.emptyContainerStyles}
+        variant={TypographyVariant.H6_SEMIBOLD}
+        subVariant={TypographyVariant.PXSMALL_REGULAR}
+        subTitle="Tap the heart icon to save items you love - they will show up here!"
+        customImageStyle={{
+          height: getScreenHeight(22),
+          width: getScreenWidth(34),
+        }}
+      />
+    </View>
+  ), []);
+
   return (
     <ScreenWrapper
       backgroundColor={ColorPalette.WHITE}
       edges={['top', 'bottom']}>
-      {/* <SystemBars style="auto" /> */}
       <Header
         name="My Wishlist"
         variant={TypographyVariant.H6_SEMIBOLD}
@@ -319,40 +371,21 @@ const WishListScreen = () => {
           <ActivityIndicator size="large" color={ColorPalette.PRIMARY} />
         </View>
       ) : (
-        <ScrollView
+        <FlashList
           style={styles.mainContainer}
-          contentContainerStyle={[
-            styles.scrollContent,
-            { paddingBottom: getScreenHeight(4) },
-          ]}
-          showsVerticalScrollIndicator={false}>
-          {isWishlistEmpty ? (
-            <View style={styles.emptyContainer}>
-              <EmptyComponent
-                imageSource={require('../../../../assets/images/favourites.png')}
-                title="Nothing on your wishlist yet"
-                customContainerStyle={styles.emptyContainerStyles}
-                variant={TypographyVariant.H6_SEMIBOLD}
-                subVariant={TypographyVariant.PXSMALL_REGULAR}
-                subTitle="Tap the heart icon to save items you love - they will show up here!"
-                customImageStyle={{
-                  height: getScreenHeight(22),
-                  width: getScreenWidth(34),
-                }}
-              />
-            </View>
-          ) : (
-            <View style={styles.searchResultCards}>
-              <ProductsGrid
-                products={filteredProducts}
-                favorites={favorites}
-                onToggleFavorite={toggleFavorite}
-                onAddToCart={handleAddToCart}
-                onCardPress={handleCardPress}
-              />
-            </View>
-          )}
-        </ScrollView>
+          contentContainerStyle={{
+            paddingHorizontal: 6,
+            paddingTop: 6,
+            paddingBottom: getScreenHeight(4),
+          }}
+          data={filteredProducts}
+          renderItem={renderWishlistItem}
+          keyExtractor={(item: any) => String(item.id)}
+          numColumns={2}
+          estimatedItemSize={220}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={ListEmptyComponent}
+        />
       )}
     </ScreenWrapper>
   );

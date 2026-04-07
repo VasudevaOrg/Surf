@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, memo, useMemo } from 'react';
 import {
   Animated,
+  FlatList,
   Image,
   View,
   RefreshControl,
@@ -8,7 +9,6 @@ import {
   InteractionManager,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { FlashList } from '@shopify/flash-list';
 
 import ChevronIcon from '../../../assets/icons/ChevronIcon';
 import FeaturedComponent from '../../../components/CustomComponents/FeaturedComponent';
@@ -268,14 +268,13 @@ const MainContent = ({
               titleVariant={TypographyVariant.LMEDIUM_EXTRABOLD}
             />
             <View style={{ minHeight: 120, width: '100%' }}>
-              <FlashList
+              <FlatList
                 data={safeData}
                 renderItem={renderCategoryItem}
                 keyExtractor={keyExtractorById}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.horizontalListContainer}
-                estimatedItemSize={100}
                 nestedScrollEnabled
               />
             </View>
@@ -326,7 +325,7 @@ const MainContent = ({
             <View style={{ minHeight: 280, width: '100%' }}>
               {isScrollable ? (
                 <>
-                  <FlashList
+                  <FlatList
                     data={firstRow}
                     renderItem={renderBestSellerItem}
                     keyExtractor={keyExtractorById}
@@ -334,14 +333,13 @@ const MainContent = ({
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.horizontalListContainer}
-                    estimatedItemSize={180}
                     nestedScrollEnabled
                     ItemSeparatorComponent={() => (
                       <View style={{ width: 12 }} />
                     )}
                   />
                   <View style={{ height: 16 }} />
-                  <FlashList
+                  <FlatList
                     data={secondRow}
                     renderItem={renderBestSellerItem}
                     keyExtractor={keyExtractorById}
@@ -349,7 +347,6 @@ const MainContent = ({
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.horizontalListContainer}
-                    estimatedItemSize={180}
                     nestedScrollEnabled
                     ItemSeparatorComponent={() => (
                       <View style={{ width: 12 }} />
@@ -436,7 +433,7 @@ const MainContent = ({
               titleVariant={TypographyVariant.LMEDIUM_EXTRABOLD}
             />
             <View style={{ minHeight: 200, width: '100%' }}>
-              <FlashList
+              <FlatList
                 data={safeData}
                 renderItem={({ item }) => (
                   <PromoCard
@@ -450,7 +447,6 @@ const MainContent = ({
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.horizontalListContainer}
-                estimatedItemSize={getScreenWidth(40)}
                 nestedScrollEnabled
               />
             </View>

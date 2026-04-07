@@ -10,6 +10,7 @@ import React, {
 import {
   Animated,
   Dimensions,
+  FlatList,
   Image,
   InteractionManager,
   LayoutChangeEvent,
@@ -17,7 +18,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
 import PagerView from 'react-native-pager-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -856,7 +856,7 @@ const HomeScreen = () => {
 
   const renderNewArrivalItem = () => {
     return (
-      <FlashList
+      <FlatList
         data={newArrivalImages}
         renderItem={({ item }: { item: any }) => (
           <NewArrivalComponent
@@ -869,6 +869,7 @@ const HomeScreen = () => {
         )}
         keyExtractor={item => item.id}
         horizontal
+        nestedScrollEnabled
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: getScreenWidth(3) }}
       />
@@ -921,7 +922,7 @@ const HomeScreen = () => {
   const renderFeaturedSection = () => {
     return (
       <View style={styles.featuredContainer}>
-        <FlashList
+        <FlatList
           data={featuredImages}
           renderItem={({ item }: { item: any }) => (
             <FeaturedComponent
@@ -933,6 +934,7 @@ const HomeScreen = () => {
           )}
           keyExtractor={item => item.id}
           horizontal
+          nestedScrollEnabled
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: getScreenWidth(3) }}
         />
@@ -1240,6 +1242,7 @@ const HomeScreen = () => {
           zIndex: 10,
           paddingTop: 0,
           elevation: 4,
+          backgroundColor: '#FFFFFF',
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,

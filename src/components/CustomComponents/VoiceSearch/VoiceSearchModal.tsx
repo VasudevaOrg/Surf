@@ -14,7 +14,6 @@ import Voice, {
   SpeechResultsEvent,
   SpeechErrorEvent,
 } from '@react-native-voice/voice';
-import { NativeModules } from 'react-native';
 import MicroPhoneFill from '../../../assets/icons/MicroPhoneFill';
 import CloseIcon from '../../../assets/icons/CloseIcon';
 import ColorPalette from '../../../config/ColorPalette';
@@ -40,14 +39,23 @@ const VoiceSearchModal: React.FC<VoiceSearchModalProps> = ({
   const pulseAnim = useState(new Animated.Value(1))[0];
 
   useEffect(() => {
-    Voice.onSpeechStart = onSpeechStart;
-    Voice.onSpeechEnd = onSpeechEnd;
-    Voice.onSpeechError = onSpeechError;
-    Voice.onSpeechResults = onSpeechResults;
-    Voice.onSpeechPartialResults = onSpeechPartialResults;
+    // Safely set up Voice handlers
+    try {
+      Voice.onSpeechStart = onSpeechStart;
+      Voice.onSpeechEnd = onSpeechEnd;
+      Voice.onSpeechError = onSpeechError;
+      Voice.onSpeechResults = onSpeechResults;
+      Voice.onSpeechPartialResults = onSpeechPartialResults;
+    } catch (e) {
+      console.warn('Voice handler setup failed:', e);
+    }
 
     return () => {
-      Voice.destroy().then(Voice.removeAllListeners);
+      try {
+        Voice.destroy().then(Voice.removeAllListeners).catch(() => {});
+      } catch (e) {
+        // ignore cleanup errors
+      }
     };
   }, []);
 
@@ -57,6 +65,7 @@ const VoiceSearchModal: React.FC<VoiceSearchModalProps> = ({
     } else {
       stopListening();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible]);
 
   useEffect(() => {
@@ -124,8 +133,14 @@ const VoiceSearchModal: React.FC<VoiceSearchModalProps> = ({
     setError(null);
 
     try {
+      // Check native module exists first
+      const { NativeModules: NM } = require('react-native');
+      if (!NM.RNVoice && !NM.Voice) {
+        setError('Voice recognition is not available on this device.');
+        return;
+      }
+
       if (Platform.OS === 'android') {
-        console.log('Requesting microphone permission...');
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
           {
@@ -136,26 +151,33 @@ const VoiceSearchModal: React.FC<VoiceSearchModalProps> = ({
             buttonPositive: 'OK',
           },
         );
-        console.log('Permission status:', granted);
         if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          setError('Microphone permission denied');
+          setError('Microphone permission denied.');
           return;
         }
       }
 
-      console.log('NativeModules.Voice:', !!NativeModules.Voice);
-      const isAvailable = await Voice.isAvailable();
-      console.log('Voice.isAvailable:', isAvailable);
+      // Check availability
+      let isAvailable = false;
+      try {
+        isAvailable = !!(await Voice.isAvailable());
+      } catch (availErr) {
+        console.warn('Voice.isAvailable() threw:', availErr);
+        isAvailable = false;
+      }
 
-      if (!NativeModules.Voice) {
-        setError('Voice native module not found. Rebuild might be needed.');
+      if (!isAvailable) {
+        setError('Speech recognition is not available on this device.');
         return;
       }
 
       await Voice.start('en-US');
-    } catch (e) {
-      console.error(e);
-      setError('Could not start voice recognition');
+    } catch (e: any) {
+      console.error('Voice start error:', e);
+      const msg = e?.message || String(e) || 'Could not start voice recognition';
+      setError(msg.includes('permission') || msg.includes('denied')
+        ? 'Microphone permission is required for voice search.'
+        : 'Could not start voice recognition. Please try again.');
     }
   };
 

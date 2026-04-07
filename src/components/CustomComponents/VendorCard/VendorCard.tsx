@@ -18,6 +18,10 @@ import {
 import { styles } from './VendorCard.styles';
 import StarRating from '../../../assets/icons/StarRating';
 
+const toHttps = (url: string): string => {
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
 interface VendorCardProps {
   item: {
     brand_id: string;
@@ -49,7 +53,7 @@ export const VendorCard: React.FC<VendorCardProps> = ({
       <View style={styles.vendorInfoRow}>
         <Image
           source={{
-            uri: item.image_url || 'https://via.placeholder.com/150',
+            uri: toHttps(item.image_url) || 'https://via.placeholder.com/150',
           }}
           style={styles.vendorLogoLarge}
           resizeMode="contain"

@@ -10,8 +10,6 @@ AppRegistry.registerComponent(appName, () => App);
 registerBackgroundHandler();
 
 LogBox.ignoreLogs([
-    'FlashList only supports padding',
-    'estimatedItemSize FlashList',
     'View has a shadow set but cannot calculate',
     'setBackgroundColor is only available on Android',
 ]);

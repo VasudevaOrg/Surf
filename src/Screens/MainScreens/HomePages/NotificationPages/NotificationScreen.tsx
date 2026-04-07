@@ -303,13 +303,14 @@ const NotificationScreen: React.FC = () => {
         ) : (
           <FlashList
             data={notifications}
-            keyExtractor={item => item.notification_id}
+            keyExtractor={(item: NotificationItem) => item.notification_id}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={{paddingBottom: 20}}
+            estimatedItemSize={80}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-            renderItem={({ item }) => {
+            renderItem={({ item }: { item: NotificationItem }) => {
               const config =
                 notificationUIConfig[item.section] ||
                 notificationUIConfig.default;

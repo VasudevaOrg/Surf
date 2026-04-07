@@ -151,6 +151,7 @@ const CartStep: React.FC<CartStepProps> = ({
           keyExtractor={item => item.item_id || item.product_id}
           showsVerticalScrollIndicator={false}
           extraData={loadingProductId}
+          estimatedItemSize={100}
         />
       </View>
       {/* promo card */}

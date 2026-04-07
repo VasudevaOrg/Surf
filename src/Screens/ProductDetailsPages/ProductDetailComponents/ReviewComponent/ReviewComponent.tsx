@@ -4,7 +4,7 @@ import {
   View,
   Image,
   TouchableOpacity,
-  FlatList,
+  ScrollView,
 } from 'react-native';
 import {getScreenHeight, getScreenWidth} from '../../../../helpers/screenSize';
 import ColorPalette from '../../../../config/ColorPalette';
@@ -130,13 +130,22 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
       />
 
       {images.length > 0 && (
-        <FlatList
-          data={images}
-          renderItem={renderImageItem}
-          keyExtractor={(_, index) => `review-image-${index}`}
+        <ScrollView
           horizontal
-          showsHorizontalScrollIndicator={false}
-        />
+          showsHorizontalScrollIndicator={false}>
+          {images.map((item, index) => {
+            const source = getImageSource(item);
+            return source ? (
+              <TouchableOpacity
+                key={`review-image-${index}`}
+                onPress={() => onImagePress?.(index)}
+                activeOpacity={0.8}
+                style={styles.imageWrapper}>
+                <Image source={source} style={styles.reviewImage} resizeMode="cover" />
+              </TouchableOpacity>
+            ) : null;
+          })}
+        </ScrollView>
       )}
 
       <TouchableOpacity

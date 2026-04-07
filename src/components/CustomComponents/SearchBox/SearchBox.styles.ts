@@ -18,14 +18,6 @@ export const styles = StyleSheet.create({
     paddingVertical: getScreenHeight(1),
     borderWidth: 1,
     borderColor: ColorPalette.BACKGROUND_GREY_100,
-    shadowColor: 'rgba(145, 1, 207, 0.3)',
-    shadowOffset: {
-      width: 0,
-      height: -8,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 40,
-    elevation: 13,
   },
   input: {
     flex: 1,

@@ -19,4 +19,5 @@ export interface MenuItemProps {
   leftIconBackgroundColor?: string;
   showBottomBorder?: boolean;
   isLastItem?: boolean;
+  numberOfLines?: number;
 }

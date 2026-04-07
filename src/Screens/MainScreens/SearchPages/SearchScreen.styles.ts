@@ -116,6 +116,10 @@ export const styles = StyleSheet.create({
   },
   productCardWrapper: {
     flex: 1,
+    margin: 6,
+    backgroundColor: ColorPalette.WHITE,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
   emptySearchContainer: {
     flex: 1,

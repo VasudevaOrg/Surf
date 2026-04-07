@@ -7,7 +7,6 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   Animated,
   Dimensions,
   Image,
@@ -16,6 +15,7 @@ import {
   Keyboard,
   BackHandler,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -32,6 +32,10 @@ import ColorPalette from '../../../config/ColorPalette';
 import {Typography} from '../../MainComponents/Typography/Typography';
 import {TypographyVariant} from '../../MainComponents/Typography/Typography.types';
 
+const toHttps = (url: string): string => {
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
 const {height, width} = Dimensions.get('window');
 
 const ChatProductCard: React.FC<{product: any}> = ({product}) => {
@@ -50,9 +54,10 @@ const ChatProductCard: React.FC<{product: any}> = ({product}) => {
       <View style={styles.productImageContainer}>
         <Image
           source={{
-            uri:
+            uri: toHttps(
               product.main_pair?.detailed?.image_path ||
-              'https://via.placeholder.com/150',
+              'https://via.placeholder.com/150'
+            ),
           }}
           style={styles.productImage}
           resizeMode="cover"
@@ -101,6 +106,7 @@ const ChatProductCard: React.FC<{product: any}> = ({product}) => {
 };
 
 const SurfyChatModal: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const dispatch = useDispatch<AppDispatch>();
   const {isVisible, messages, isLoading} = useSelector(
     (state: RootState) => state.surfy,
@@ -216,7 +222,8 @@ const SurfyChatModal: React.FC = () => {
           pointerEvents: isVisible ? 'auto' : 'none',
         },
       ]}>
-      <SafeAreaView style={styles.safeArea}>
+      {/* Plain View — no SafeAreaView so modal extends to physical bottom edge */}
+      <View style={styles.safeArea}>
         <Animated.View
           style={[
             styles.modalContent,
@@ -317,7 +324,7 @@ const SurfyChatModal: React.FC = () => {
               )}
             </ScrollView>
 
-            <View style={styles.inputContainer}>
+            <View style={[styles.inputContainer, {paddingBottom: Math.max(insets.bottom, 15)}]}>
               <TextInput
                 style={styles.input}
                 placeholder="Ask Lucy anything..."
@@ -343,7 +350,7 @@ const SurfyChatModal: React.FC = () => {
             </View>
           </KeyboardAvoidingView>
         </Animated.View>
-      </SafeAreaView>
+      </View>
     </Animated.View>
   );
 };
@@ -362,7 +369,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    marginTop: 40,
+    marginTop: 50,
     overflow: 'hidden',
   },
   keyboardView: {

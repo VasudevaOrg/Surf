@@ -13,6 +13,10 @@ import { Spacing } from '../../../config/globalStyles';
 import { Typography } from '../../MainComponents/Typography/Typography';
 import { TypographyVariant } from '../../MainComponents/Typography/Typography.types';
 
+const toHttps = (url: string): string => {
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
 interface PromoCardProps {
   title: string;
   description?: string;
@@ -35,7 +39,7 @@ const PromoCard: React.FC<PromoCardProps> = ({
       activeOpacity={0.8}>
       <View style={styles.imageContainer}>
         {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={styles.image} />
+          <Image source={{ uri: toHttps(imageUrl) }} style={styles.image} />
         ) : (
           <Image
             source={require('../../../assets/images/demo1.png')}
