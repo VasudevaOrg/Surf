@@ -209,7 +209,7 @@ const PhoneNumberScreen = ({ navigation }) => {
     const translateX = useRef(new Animated.Value(0)).current;
     const loopDistance = data.length * 90; // card width * total images
 
-    const duplicated = [...data, ...data, ...data, ...data, ...data, ...data]; // 2 copies only
+    const duplicated = [...data, ...data, ...data]; // 3 copies is sufficient for seamless loop
 
     const animate = () => {
       translateX.setValue(0);
@@ -276,12 +276,7 @@ const PhoneNumberScreen = ({ navigation }) => {
               textVariant={TypographyVariant.LMEDIUM_REGULAR}
             />
           </View>
-          <LinearGradient
-            colors={['transparent', 'white']}
-            style={styles.fadeTop}
-            start={{ x: 0.5, y: 1 }}
-            end={{ x: 0.5, y: 0 }}
-          />
+          {/* Fades removed as per user request */}
           <View style={{ gap: 11 }}>
             <InfiniteRow data={row1} reverse={false} speed={10000} />
             <InfiniteRow data={row2} reverse={true} speed={10000} />
@@ -289,10 +284,7 @@ const PhoneNumberScreen = ({ navigation }) => {
           </View>
 
           {/* Bottom Blur / Fade */}
-          <LinearGradient
-            colors={['transparent', 'white']}
-            style={styles.fadeBottom}
-          />
+          {/* Fades removed as per user request */}
         </View>
       </>
     ),
@@ -445,7 +437,7 @@ const PhoneNumberScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       {/* <LinearGradient
         colors={
           Gradients.SELLER_PRIMARY_GRADIENT.colors || ['#9333EA', '#7928CA']
