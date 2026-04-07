@@ -1,0 +1,43 @@
+import { StyleSheet, Platform } from 'react-native';
+import {
+  getScreenWidth,
+  getScreenHeight,
+  getFigmaDimension,
+} from '../../../helpers/screenSize';
+import ColorPalette from '../../../config/ColorPalette';
+
+export const styles = StyleSheet.create({
+  container: {
+    height: getScreenHeight(5.5),
+    backgroundColor: ColorPalette.WHITE,
+    borderRadius: getScreenWidth(2),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: getScreenWidth(3),
+    paddingVertical: getScreenHeight(1),
+    borderWidth: 1,
+    borderColor: ColorPalette.BACKGROUND_GREY_100,
+    shadowColor: 'rgba(145, 1, 207, 0.3)',
+    shadowOffset: {
+      width: 0,
+      height: -8,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 40,
+    elevation: 13,
+  },
+  input: {
+    flex: 1,
+    marginLeft: getScreenWidth(3),
+    color: ColorPalette.BLACK,
+    fontFamily: 'Poppins-Regular',
+    fontSize: getFigmaDimension(13),
+    padding: 0,
+  },
+  searchIcon: {
+    width: getScreenWidth(5),
+    height: getScreenWidth(5),
+    tintColor: ColorPalette.SEARCH_ICON,
+  },
+});

@@ -1,118 +1,65 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
+import 'react-native-gesture-handler';
 import React from 'react';
-import type {PropsWithChildren} from 'react';
+import { NavigationContainer } from '@react-navigation/native';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
-
+  SafeAreaProvider,
+  initialWindowMetrics,
+} from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { RootNavigator } from './src/navigation/RootNavigator';
+import { persistor, store } from './src/store';
+import { navigationRef } from './src/utils/navigationref';
 import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  notificationListener,
+  requestUserPermission,
+} from './src/services/NotificationService';
+import Toast from 'react-native-toast-message';
+import { ToastComponent } from './src/components/MainComponents/Toast/ToastComponent';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+export const toastConfig = {
+  appToast: (props: any) => <ToastComponent {...props} />,
+};
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+const App = () => {
+  React.useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+    const timer = setTimeout(async () => {
+      try {
+        await requestUserPermission?.();
+      } catch (e) {
+        console.warn('requestUserPermission error:', e);
+      }
+    }, 5000);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+    try {
+      unsubscribe = notificationListener?.();
+    } catch (e) {
+      console.warn('notificationListener error:', e);
+    }
+
+    return () => {
+      clearTimeout(timer);
+      unsubscribe?.();
+    };
+  }, []);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+            <NavigationContainer ref={navigationRef}>
+              <RootNavigator />
+              <Toast config={toastConfig} />
+            </NavigationContainer>
+          </SafeAreaProvider>
+        </PersistGate>
+      </Provider>
+    </GestureHandlerRootView>
   );
-}
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+};
 
 export default App;
