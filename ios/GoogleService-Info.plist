@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>686147374218-sm7ghhhlrto5k55n3qc1bn7r1cglc320.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.686147374218-sm7ghhhlrto5k55n3qc1bn7r1cglc320</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>686147374218-k0khvkrphka70h4dcsqe4f8bnphb18tr.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyD-ITy2ONLAfXeWxgY1PGGAOUIPrfDi8M4</string>
+	<key>GCM_SENDER_ID</key>
+	<string>686147374218</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.surfcustomerapp</string>
+	<key>PROJECT_ID</key>
+	<string>surfcustomerapp</string>
+	<key>STORAGE_BUCKET</key>
+	<string>surfcustomerapp.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:686147374218:ios:37af14fcdbcbb98f50b173</string>
+</dict>
+</plist>
