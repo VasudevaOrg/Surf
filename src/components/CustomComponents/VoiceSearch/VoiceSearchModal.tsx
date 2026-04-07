@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
   TouchableOpacity,
-  Text,
   StyleSheet,
   Animated,
   Easing,
@@ -13,7 +12,13 @@ import {
 import Voice, {
   SpeechResultsEvent,
   SpeechErrorEvent,
-} from '@react-native-voice/voice';
+} from '@dev-amirzubair/react-native-voice';
+import { 
+  check, 
+  request, 
+  PERMISSIONS, 
+  RESULTS 
+} from 'react-native-permissions';
 import MicroPhoneFill from '../../../assets/icons/MicroPhoneFill';
 import CloseIcon from '../../../assets/icons/CloseIcon';
 import ColorPalette from '../../../config/ColorPalette';
@@ -40,15 +45,19 @@ const VoiceSearchModal: React.FC<VoiceSearchModalProps> = ({
 
   useEffect(() => {
     // Safely set up Voice handlers
-    try {
-      Voice.onSpeechStart = onSpeechStart;
-      Voice.onSpeechEnd = onSpeechEnd;
-      Voice.onSpeechError = onSpeechError;
-      Voice.onSpeechResults = onSpeechResults;
-      Voice.onSpeechPartialResults = onSpeechPartialResults;
-    } catch (e) {
-      console.warn('Voice handler setup failed:', e);
-    }
+    const setupVoice = () => {
+      try {
+        Voice.onSpeechStart = onSpeechStart;
+        Voice.onSpeechEnd = onSpeechEnd;
+        Voice.onSpeechError = onSpeechError;
+        Voice.onSpeechResults = onSpeechResults;
+        Voice.onSpeechPartialResults = onSpeechPartialResults;
+      } catch (e) {
+        console.warn('Voice handler setup failed:', e);
+      }
+    };
+
+    setupVoice();
 
     return () => {
       try {
@@ -61,7 +70,11 @@ const VoiceSearchModal: React.FC<VoiceSearchModalProps> = ({
 
   useEffect(() => {
     if (isVisible) {
-      startListening();
+      // Small delay to ensure modal is full open before starting listening
+      const timer = setTimeout(() => {
+        startListening();
+      }, 500);
+      return () => clearTimeout(timer);
     } else {
       stopListening();
     }
@@ -103,10 +116,14 @@ const VoiceSearchModal: React.FC<VoiceSearchModalProps> = ({
   const onSpeechError = (e: SpeechErrorEvent) => {
     setIsListening(false);
     console.log('onSpeechError: ', e);
-    if (e.error?.message?.includes('No match')) {
-      // Silent fail for "no match" usually means user stopped talking
+    
+    const errorMsg = String(e.error?.message || e.error || '');
+    if (errorMsg.includes('No match')) {
+      // Silent fail for "no match"
+    } else if (errorMsg.includes('permission') || errorMsg.includes('desc') || errorMsg.includes('denied')) {
+      setError('Permission denied. Please enable Microphone and Speech Recognition in your settings.');
     } else {
-      setError(e.error?.message || 'Speech Recognition Error');
+      setError(errorMsg || 'Speech Recognition Error');
     }
   };
 
@@ -114,16 +131,46 @@ const VoiceSearchModal: React.FC<VoiceSearchModalProps> = ({
     if (e.value && e.value.length > 0) {
       setResults(e.value);
       const transcript = e.value[0];
+      // Give the user a moment to see their last words before closing
       setTimeout(() => {
         onResult(transcript);
         onClose();
-      }, 800);
+      }, 1000);
     }
   };
 
   const onSpeechPartialResults = (e: SpeechResultsEvent) => {
     if (e.value) {
       setPartialResults(e.value);
+    }
+  };
+
+  const checkIOSPermissions = async (): Promise<boolean> => {
+    if (Platform.OS !== 'ios') return true;
+
+    try {
+      const micStatus = await check(PERMISSIONS.IOS.MICROPHONE);
+      const speechStatus = await check(PERMISSIONS.IOS.SPEECH_RECOGNITION);
+
+      if (micStatus === RESULTS.GRANTED && speechStatus === RESULTS.GRANTED) {
+        return true;
+      }
+
+      // Request if not granted
+      if (micStatus !== RESULTS.GRANTED) {
+        const newMicStatus = await request(PERMISSIONS.IOS.MICROPHONE);
+        if (newMicStatus !== RESULTS.GRANTED) return false;
+      }
+
+      if (speechStatus !== RESULTS.GRANTED) {
+        const newSpeechStatus = await request(PERMISSIONS.IOS.SPEECH_RECOGNITION);
+        if (newSpeechStatus !== RESULTS.GRANTED) return false;
+      }
+
+      return true;
+    } catch (err) {
+      console.warn('Permission check failed:', err);
+      return false;
     }
   };
 
@@ -135,11 +182,14 @@ const VoiceSearchModal: React.FC<VoiceSearchModalProps> = ({
     try {
       // Check native module exists first
       const { NativeModules: NM } = require('react-native');
-      if (!NM.RNVoice && !NM.Voice) {
-        setError('Voice recognition is not available on this device.');
+      const voiceModule = NM.RNVoice || NM.Voice;
+      
+      if (!voiceModule) {
+        setError('Voice recognition module is not properly linked in this build.');
         return;
       }
 
+      // Handle Permissions rigorously
       if (Platform.OS === 'android') {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
@@ -155,29 +205,44 @@ const VoiceSearchModal: React.FC<VoiceSearchModalProps> = ({
           setError('Microphone permission denied.');
           return;
         }
+      } else if (Platform.OS === 'ios') {
+        const hasPermissions = await checkIOSPermissions();
+        if (!hasPermissions) {
+          setError('Microphone and Speech Recognition permissions are required.');
+          return;
+        }
       }
 
       // Check availability
       let isAvailable = false;
       try {
-        isAvailable = !!(await Voice.isAvailable());
-      } catch (availErr) {
-        console.warn('Voice.isAvailable() threw:', availErr);
-        isAvailable = false;
+        const isAvailableValue = await Voice.isAvailable();
+        isAvailable = !!isAvailableValue;
+      } catch (err) {
+        isAvailable = true; // Attempt anyway
       }
 
-      if (!isAvailable) {
-        setError('Speech recognition is not available on this device.');
+      if (!isAvailable && Platform.OS === 'android') {
+        setError('Speech services are not available on this device.');
         return;
       }
+
+      // Important: Destroy existing session before starting
+      try {
+        await Voice.stop();
+        await Voice.destroy();
+      } catch (e) {}
 
       await Voice.start('en-US');
     } catch (e: any) {
       console.error('Voice start error:', e);
-      const msg = e?.message || String(e) || 'Could not start voice recognition';
-      setError(msg.includes('permission') || msg.includes('denied')
-        ? 'Microphone permission is required for voice search.'
-        : 'Could not start voice recognition. Please try again.');
+      const msg = String(e?.message || e?.error || e || 'Could not start voice recognition');
+      
+      if (msg.includes('permission') || msg.includes('denied') || msg.includes('UsageDescription')) {
+        setError('Microphone or speech recognition permission is required.');
+      } else {
+        setError('Please check your settings and try again.');
+      }
     }
   };
 

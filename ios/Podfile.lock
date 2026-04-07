@@ -1088,8 +1088,27 @@ PODS:
     - Yoga
   - react-native-safe-area-context (5.7.0):
     - React-Core
-  - react-native-voice (3.2.4):
+  - react-native-voice (1.0.4):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-webview (13.8.6):
     - DoubleConversion
     - glog
@@ -1373,6 +1392,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNPermissions (5.5.1):
+    - React-Core
   - RNReanimated (3.6.2):
     - DoubleConversion
     - glog
@@ -1465,7 +1486,7 @@ DEPENDENCIES:
   - react-native-maps (from `../node_modules/react-native-maps`)
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
-  - "react-native-voice (from `../node_modules/@react-native-voice/voice`)"
+  - "react-native-voice (from `../node_modules/@dev-amirzubair/react-native-voice`)"
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -1495,6 +1516,7 @@ DEPENDENCIES:
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - "RNFlashList (from `../node_modules/@shopify/flash-list`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
@@ -1589,7 +1611,7 @@ EXTERNAL SOURCES:
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-voice:
-    :path: "../node_modules/@react-native-voice/voice"
+    :path: "../node_modules/@dev-amirzubair/react-native-voice"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-nativeconfig:
@@ -1648,6 +1670,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@shopify/flash-list"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNPermissions:
+    :path: "../node_modules/react-native-permissions"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -1705,7 +1729,7 @@ SPEC CHECKSUMS:
   react-native-maps: deb2adbdf309b622f15055b72b8742054929c740
   react-native-pager-view: 8825d687514422e9a8c95cd15f08a9a5a02e07c9
   react-native-safe-area-context: e89848fc12d32ccca63d0d7d16dd96918d07c730
-  react-native-voice: 908a0eba96c8c3d643e4f98b7232c6557d0a6f9c
+  react-native-voice: 4d1b93d4127d89966e3047e07195341adcfc7073
   react-native-webview: a4483a25c71098e407df1c1d9056ab907647d7c7
   React-nativeconfig: ba9a2e54e2f0882cf7882698825052793ed4c851
   React-NativeModulesApple: 84aaad2b0e546d7b839837ca537f6e72804a4cad
@@ -1735,12 +1759,13 @@ SPEC CHECKSUMS:
   RNFBMessaging: 48579eec1f6ffaed4038b67426d7076963ab9401
   RNFlashList: 1076a3fb7c4608a8cdf265f0783592b8fc41b6a7
   RNGestureHandler: f2c275beefd4c004dbf27e1457579670ef2d5105
+  RNPermissions: 15f01d09d7223f0af0b6a6502abe3919517c6ed9
   RNReanimated: dd4f379b94064ded836fa82efaf2c3061f5d3b0a
   RNScreens: a2d8a2555b4653d7a19706eb172f855657ac30d7
   RNSVG: a9e095acf2e207f2ef491870523ed455636cf3b8
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   Yoga: 950bbfd7e6f04790fdb51149ed51df41f329fcc8
 
-PODFILE CHECKSUM: ec989d03be2095729c35af95eed62712fc4bef0d
+PODFILE CHECKSUM: 1ef77dba08c9ba777ade027d0848c6e9dcaf1457
 
-COCOAPODS: 1.14.3
+COCOAPODS: 1.16.2
