@@ -546,9 +546,11 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
   const productImages = useMemo(() => {
     if (!product) return [];
     const urls = product.image_urls || [];
-    return urls.map((url: string) =>
-      typeof url === 'string' ? { uri: toHttps(url) } : url,
-    );
+    return urls
+      .filter((url: any) => !!url)
+      .map((url: string) =>
+        typeof url === 'string' ? { uri: toHttps(url) } : url,
+      );
   }, [product]);
 
   const variationFeaturesMapped = useMemo(() => {

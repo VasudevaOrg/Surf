@@ -115,6 +115,8 @@ const ZoomableImage: React.FC<{
     ],
   }));
 
+  if (!source) return null;
+
   return (
     <GestureDetector gesture={composedGesture}>
       <Animated.Image
@@ -158,30 +160,35 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
           </View>
         </TouchableOpacity>
 
-        <PagerView
-          style={styles.pagerView}
-          initialPage={initialIndex}
-          onPageSelected={e => setCurrentIndex(e.nativeEvent.position)}>
-          {images.map((image, index) => (
-            <View key={index} style={styles.page}>
-              <ZoomableImage source={image} />
-            </View>
-          ))}
-        </PagerView>
+        {visible && images.length > 0 && (
+          <PagerView
+            key={`pager-${visible}-${images.length}-${initialIndex}`}
+            style={styles.pagerView}
+            initialPage={initialIndex}
+            onPageSelected={e => setCurrentIndex(e.nativeEvent.position)}>
+            {images.map((image, index) => (
+              <View key={index} style={styles.page}>
+                <ZoomableImage source={image} />
+              </View>
+            ))}
+          </PagerView>
+        )}
 
-        <View style={styles.indicatorContainer}>
-          {images.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.indicator,
-                currentIndex === index
-                  ? styles.activeIndicator
-                  : styles.inactiveIndicator,
-              ]}
-            />
-          ))}
-        </View>
+        {visible && images.length > 0 && (
+          <View style={styles.indicatorContainer}>
+            {images.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.indicator,
+                  currentIndex === index
+                    ? styles.activeIndicator
+                    : styles.inactiveIndicator,
+                ]}
+              />
+            ))}
+          </View>
+        )}
       </GestureHandlerRootView>
     </Modal>
   );
