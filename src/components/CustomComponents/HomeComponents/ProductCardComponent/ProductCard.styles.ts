@@ -1,7 +1,7 @@
-import {StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native';
 import ColorPalette from '../../../../config/ColorPalette';
-import {Spacing} from '../../../../config/globalStyles';
-import {getScreenHeight, getScreenWidth} from '../../../../helpers/screenSize';
+import { Spacing } from '../../../../config/globalStyles';
+import { getScreenHeight, getScreenWidth } from '../../../../helpers/screenSize';
 
 export const styles = StyleSheet.create({
   container: {
@@ -36,14 +36,6 @@ export const styles = StyleSheet.create({
     backgroundColor: ColorPalette.WHITE,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: ColorPalette.BLACK,
-    shadowOffset: {
-      width: 0,
-      height: -8,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 40,
-    elevation: 9,
   },
   infoContainer: {
     display: 'flex',
@@ -81,14 +73,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: getScreenWidth(2),
     paddingVertical: getScreenHeight(0.5),
     backgroundColor: ColorPalette.WHITE,
-    shadowColor: ColorPalette.BLACK,
-    shadowOffset: {
-      width: 0,
-      height: -8,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 40,
-    elevation: 9,
     borderRadius: Spacing.XXSmall,
   },
   ratingBadge: {

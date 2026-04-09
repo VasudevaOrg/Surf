@@ -1,4 +1,4 @@
-import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface AppState {
   isLoading: boolean;
@@ -38,7 +38,7 @@ const appSlice = createSlice({
     },
     setSupportInfo: (
       state,
-      action: PayloadAction<{whatsapp: string; email: string}>,
+      action: PayloadAction<{ whatsapp: string; email: string }>,
     ) => {
       state.supportWhatsApp = action.payload.whatsapp;
       state.supportEmail = action.payload.email;

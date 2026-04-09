@@ -1,7 +1,7 @@
-import {StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native';
 import ColorPalette from '../../../../config/ColorPalette';
-import {Spacing} from '../../../../config/globalStyles';
-import {getScreenHeight, getScreenWidth} from '../../../../helpers/screenSize';
+import { Spacing } from '../../../../config/globalStyles';
+import { getScreenHeight, getScreenWidth } from '../../../../helpers/screenSize';
 
 /**
  * Creates styles for the BestSellerCard component with responsive measurements
@@ -45,14 +45,6 @@ export const createBestSellerCardStyles = () => {
       backgroundColor: ColorPalette.WHITE,
       justifyContent: 'center',
       alignItems: 'center',
-      shadowColor: ColorPalette.BLACK,
-      shadowOffset: {
-        width: 0,
-        height: -8,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 40,
-      elevation: 9,
     },
     contentContainer: {
       display: 'flex',
@@ -96,14 +88,6 @@ export const createBestSellerCardStyles = () => {
       paddingHorizontal: getScreenWidth(2),
       paddingVertical: getScreenHeight(0.5),
       backgroundColor: ColorPalette.WHITE,
-      shadowColor: ColorPalette.BLACK,
-      shadowOffset: {
-        width: 0,
-        height: -8,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 40,
-      elevation: 9,
       borderRadius: Spacing.XXSmall,
     },
     quantitySelectorContainer: {

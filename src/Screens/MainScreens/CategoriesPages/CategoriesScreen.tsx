@@ -358,15 +358,17 @@ const CategoriesScreen: React.FC = memo(() => {
                         ? { uri: toHttps(sub.image_url) }
                         : require('../../../assets/images/noProductImageAvailable.png')
                     }
-                    onPress={() =>
+                    onPress={() => {
+                      const hasSubcategories =
+                        sub.subcategories && sub.subcategories.length > 0;
                       navigateToMain(
                         sub.category,
                         sub.category,
                         sub.category_id,
-                        true,
+                        hasSubcategories,
                         sub.subcategories || [],
-                      )
-                    }
+                      );
+                    }}
                     imageContainerStyle={{
                       width: categoryItemWidth,
                       height: categoryItemHeight,

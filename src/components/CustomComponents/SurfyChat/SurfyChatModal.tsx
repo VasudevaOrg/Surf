@@ -7,13 +7,11 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Animated,
   Dimensions,
   Image,
   ActivityIndicator,
   FlatList,
-  Keyboard,
-  BackHandler,
+  Modal,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useDispatch, useSelector} from 'react-redux';
@@ -25,23 +23,22 @@ import {
   toggleSurfy,
   sendMessageToAi,
   clearChat,
-  Message,
 } from '../../../store/slices/surfySlice';
 import CloseIcon from '../../../assets/icons/CloseIcon';
 import ColorPalette from '../../../config/ColorPalette';
 import {Typography} from '../../MainComponents/Typography/Typography';
 import {TypographyVariant} from '../../MainComponents/Typography/Typography.types';
 
+const {width} = Dimensions.get('window');
+
 const toHttps = (url: string): string => {
   if (!url) return '';
   return url.replace(/^http:\/\//i, 'https://');
 };
-const {height, width} = Dimensions.get('window');
 
 const ChatProductCard: React.FC<{product: any}> = ({product}) => {
   const navigation =
     useNavigation<StackNavigationProp<DashboardStackParamList>>();
-
   const handlePress = () => {
     navigation.navigate('ProductDetail', {productId: product.product_id});
   };
@@ -56,7 +53,7 @@ const ChatProductCard: React.FC<{product: any}> = ({product}) => {
           source={{
             uri: toHttps(
               product.main_pair?.detailed?.image_path ||
-              'https://via.placeholder.com/150'
+                'https://via.placeholder.com/150',
             ),
           }}
           style={styles.productImage}
@@ -114,87 +111,11 @@ const SurfyChatModal: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const scrollRef = useRef<ScrollView>(null);
 
-  // Custom Animations
-  const slideAnim = useRef(new Animated.Value(height)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
   useEffect(() => {
     if (isVisible) {
-      Animated.parallel([
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          friction: 8,
-          tension: 40,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
-      // Scroll to bottom when opening
       setTimeout(() => scrollRef.current?.scrollToEnd({animated: true}), 100);
-    } else {
-      Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: height,
-          duration: 400,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
     }
-  }, [isVisible, slideAnim, fadeAnim]);
-
-  useEffect(() => {
-    // Scroll to bottom when new messages arrive
-    scrollRef.current?.scrollToEnd({animated: true});
-  }, [messages, isLoading]);
-
-  // Android Keyboard Handling
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      const showSubscription = Keyboard.addListener(
-        'keyboardDidShow',
-        (e: any) => {
-          setKeyboardHeight(e.endCoordinates.height);
-        },
-      );
-      const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
-        setKeyboardHeight(0);
-      });
-
-      return () => {
-        showSubscription.remove();
-        hideSubscription.remove();
-      };
-    }
-  }, []);
-
-  // Handle Back Button to close Lucy
-  useEffect(() => {
-    const handleBackPress = () => {
-      if (isVisible) {
-        handleClose();
-        return true; // Prevent default behavior
-      }
-      return false; // Let default behavior happen
-    };
-
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      handleBackPress,
-    );
-
-    return () => backHandler.remove();
-  }, [isVisible]);
+  }, [messages, isLoading, isVisible]);
 
   const handleClose = () => {
     dispatch(toggleSurfy(false));
@@ -211,32 +132,23 @@ const SurfyChatModal: React.FC = () => {
     dispatch(sendMessageToAi(text));
   };
 
-  if (!isVisible && (slideAnim as any)._value === height) return null;
-
   return (
-    <Animated.View
-      style={[
-        styles.overlay,
-        {
-          opacity: fadeAnim,
-          pointerEvents: isVisible ? 'auto' : 'none',
-        },
-      ]}>
-      {/* Plain View — no SafeAreaView so modal extends to physical bottom edge */}
-      <View style={styles.safeArea}>
-        <Animated.View
-          style={[
-            styles.modalContent,
-            {
-              transform: [{translateY: slideAnim}],
-            },
-          ]}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            style={[
-              styles.keyboardView,
-              Platform.OS === 'android' && {marginBottom: keyboardHeight},
-            ]}>
+    <Modal
+      visible={isVisible}
+      animationType="slide"
+      transparent={true}
+      statusBarTranslucent={true}
+      onRequestClose={handleClose}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.rootKeyboardView}>
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.backdrop}
+            onPress={handleClose}
+          />
+          <View style={styles.modalContent}>
             <View style={styles.header}>
               <View>
                 <Typography
@@ -324,7 +236,11 @@ const SurfyChatModal: React.FC = () => {
               )}
             </ScrollView>
 
-            <View style={[styles.inputContainer, {paddingBottom: Math.max(insets.bottom, 15)}]}>
+            <View
+              style={[
+                styles.inputContainer,
+                {paddingBottom: Math.max(insets.bottom, 15)},
+              ]}>
               <TextInput
                 style={styles.input}
                 placeholder="Ask Lucy anything..."
@@ -348,32 +264,30 @@ const SurfyChatModal: React.FC = () => {
                 />
               </TouchableOpacity>
             </View>
-          </KeyboardAvoidingView>
-        </Animated.View>
-      </View>
-    </Animated.View>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    zIndex: 10000,
-  },
-  safeArea: {
+  rootKeyboardView: {
     flex: 1,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  backdrop: {
+    height: 80, // Space from top
   },
   modalContent: {
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    marginTop: 50,
     overflow: 'hidden',
-  },
-  keyboardView: {
-    flex: 1,
   },
   header: {
     paddingHorizontal: 20,
@@ -455,7 +369,7 @@ const styles = StyleSheet.create({
   },
   productCarouselContainer: {
     marginTop: 5,
-    marginLeft: -20, // To allow horizontal scroll to touch edges
+    marginLeft: -20,
     marginRight: -20,
   },
   productList: {

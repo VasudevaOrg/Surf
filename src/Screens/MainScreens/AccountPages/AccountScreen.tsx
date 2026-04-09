@@ -1,5 +1,5 @@
-import React, {useMemo, useCallback} from 'react';
-import {useFocusEffect} from '@react-navigation/native';
+import React, { useMemo, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   Image,
   ScrollView,
@@ -7,23 +7,23 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
 import ArrowRightIcon from '../../../assets/icons/ArrowRightIcon';
 import QuestionMarkIcon from '../../../assets/icons/QuestionMarkIcon';
-import {Header} from '../../../components/CustomComponents/Header/Header';
-import {MenuItem} from '../../../components/CustomComponents/MenuItem/MenuItem';
-import {Typography} from '../../../components/MainComponents/Typography/Typography';
-import {TypographyVariant} from '../../../components/MainComponents/Typography/Typography.types';
+import { Header } from '../../../components/CustomComponents/Header/Header';
+import { MenuItem } from '../../../components/CustomComponents/MenuItem/MenuItem';
+import { Typography } from '../../../components/MainComponents/Typography/Typography';
+import { TypographyVariant } from '../../../components/MainComponents/Typography/Typography.types';
 import ColorPalette from '../../../config/ColorPalette';
-import {getScreenHeight, getScreenWidth} from '../../../helpers/screenSize';
-import {goBack, navigate} from '../../../utils/navigationref';
-import {styles} from './AccountScreen.styles';
-import {API_ENDPOINTS} from '../../../config/ApiConfig';
-import {useState, useEffect} from 'react';
+import { getScreenHeight, getScreenWidth } from '../../../helpers/screenSize';
+import { goBack, navigate } from '../../../utils/navigationref';
+import { styles } from './AccountScreen.styles';
+import { API_ENDPOINTS } from '../../../config/ApiConfig';
+import { useState, useEffect } from 'react';
 import BagIcon from '../../../assets/icons/BagIcon';
 import MastercardIcon from '../../../assets/icons/MastercardIcon';
-import {AccountIcon} from '../../../assets/icons/BottomNavIcons';
+import { AccountIcon } from '../../../assets/icons/BottomNavIcons';
 import LocationPinIcon from '../../../assets/icons/LocationPinIcon';
 import HeartIcon from '../../../assets/icons/HeartIcon';
 import StockIcon from '../../../assets/icons/StoreIcon';
@@ -38,27 +38,28 @@ import {
   InfoIcon,
   LogoutIcon,
 } from '../../../assets/icons/AccountScreenIcons';
-import {AccountOptionCard} from '../../../components/CustomComponents/AccountComponents/AccountOptionCard/AccountOptionCard';
+import { AccountOptionCard } from '../../../components/CustomComponents/AccountComponents/AccountOptionCard/AccountOptionCard';
 
-import {useSelector, useDispatch} from 'react-redux';
-import {RootState} from '../../../store';
-import {ConfirmationModal} from '../../../components/CustomComponents/ConfirmationModal/ConfirmationModal';
-import {logout} from '../../../store/slices/authSlice';
-import {CommonActions} from '@react-navigation/native';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../../../store';
+import { ConfirmationModal } from '../../../components/CustomComponents/ConfirmationModal/ConfirmationModal';
+import { logout } from '../../../store/slices/authSlice';
+import { CommonActions } from '@react-navigation/native';
 import {
   Button,
   ButtonSize,
   ButtonState,
   ButtonVariant,
 } from '../../../components/MainComponents/Button';
-import {Spacing} from '../../../config/globalStyles';
-import {SupportChoiceModal} from '../../../components/CustomComponents/SupportModal/SupportChoiceModal';
+import { Spacing } from '../../../config/globalStyles';
+import { SupportChoiceModal } from '../../../components/CustomComponents/SupportModal/SupportChoiceModal';
 import ScreenWrapper from '../../../components/CustomComponents/ScreenWrapper/ScreenWrapper';
 import LinearGradient from 'react-native-linear-gradient';
 import UserIcon from '../../../assets/icons/UserIcon';
 import ArrowLeftIcon from '../../../assets/icons/ArrowLeft';
 import BoxIcon from '../../../assets/icons/BoxIcon';
-import {Screen} from 'react-native-screens';
+import { Screen } from 'react-native-screens';
+import DeleteIcon from '../../../assets/icons/DeleteIcon';
 
 const AccountScreen = () => {
   const [profileData, setProfileData] = useState<any>(null);
@@ -66,7 +67,8 @@ const AccountScreen = () => {
   const [isLogoutModalVisible, setLogoutModalVisible] = useState(false);
   const [isSupportModalVisible, setSupportModalVisible] = useState(false);
   const userId = useSelector((state: RootState) => state.auth.userId);
-  const {supportWhatsApp, supportEmail, pageIds} = useSelector(
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+  const { supportWhatsApp, supportEmail, pageIds } = useSelector(
     (state: RootState) => state.app,
   );
   const dispatch = useDispatch();
@@ -166,7 +168,7 @@ const AccountScreen = () => {
         onPress: () => {
           navigate('MainScreens', {
             screen: 'Account',
-            params: {screen: 'OrderScreen'},
+            params: { screen: 'OrderScreen' },
           });
         },
       },
@@ -214,7 +216,7 @@ const AccountScreen = () => {
         onPress: () => {
           navigate('MainScreens', {
             screen: 'Home',
-            params: {screen: 'WishList'},
+            params: { screen: 'WishList' },
           });
         },
       },
@@ -244,31 +246,31 @@ const AccountScreen = () => {
       // },
       ...(userId
         ? [
-            {
-              label: 'Notifications',
-              subtitle: 'Push, email & SMS alerts',
-              image: undefined,
-              leftIcon: (
-                <BellNotificationIcon
-                  size={24}
-                  color={ColorPalette.TEXT_GREY_500 as string}
-                  style={undefined}
-                />
-              ),
-              rightIcon: (
-                <ArrowRightIcon
-                  style={undefined}
-                  color={ColorPalette.TEXT_GREY_400}
-                />
-              ),
-              onPress: () => {
-                navigate('MainScreens', {
-                  screen: 'Home',
-                  params: {screen: 'Notification'},
-                });
-              },
+          {
+            label: 'Notifications',
+            subtitle: 'Push, email & SMS alerts',
+            image: undefined,
+            leftIcon: (
+              <BellNotificationIcon
+                size={24}
+                color={ColorPalette.TEXT_GREY_500 as string}
+                style={undefined}
+              />
+            ),
+            rightIcon: (
+              <ArrowRightIcon
+                style={undefined}
+                color={ColorPalette.TEXT_GREY_400}
+              />
+            ),
+            onPress: () => {
+              navigate('MainScreens', {
+                screen: 'Home',
+                params: { screen: 'Notification' },
+              });
             },
-          ]
+          },
+        ]
         : []),
       // {
       //   label: 'Select currency',
@@ -383,35 +385,35 @@ const AccountScreen = () => {
             color={ColorPalette.TEXT_GREY_400}
           />
         ),
-        onPress: () => {},
+        onPress: () => { },
       },
       ...(pageIds?.about_us_page
         ? [
-            {
-              label: 'About Us',
-              subtitle: 'Learn more about us',
-              image: undefined,
-              leftIcon: (
-                <InfoIcon
-                  size={24}
-                  color={ColorPalette.TEXT_GREY_500 as string}
-                  style={undefined}
-                />
-              ),
-              rightIcon: (
-                <ArrowRightIcon
-                  style={undefined}
-                  color={ColorPalette.TEXT_GREY_400}
-                />
-              ),
-              onPress: () => {
-                navigate('WebViewScreen', {
-                  url: pageIds.about_us_page!,
-                  title: 'About Us',
-                });
-              },
+          {
+            label: 'About Us',
+            subtitle: 'Learn more about us',
+            image: undefined,
+            leftIcon: (
+              <InfoIcon
+                size={24}
+                color={ColorPalette.TEXT_GREY_500 as string}
+                style={undefined}
+              />
+            ),
+            rightIcon: (
+              <ArrowRightIcon
+                style={undefined}
+                color={ColorPalette.TEXT_GREY_400}
+              />
+            ),
+            onPress: () => {
+              navigate('WebViewScreen', {
+                url: pageIds.about_us_page!,
+                title: 'About Us',
+              });
             },
-          ]
+          },
+        ]
         : []),
     ],
     [pageIds],
@@ -448,6 +450,40 @@ const AccountScreen = () => {
     ];
   }, [userId]);
 
+  const deleteAccountItem = useMemo(() => {
+    if (!userId) return [];
+    return [
+      {
+        label: 'Delete account',
+        image: undefined,
+        leftIcon: (
+          <DeleteIcon
+            size={22}
+            color={ColorPalette.TEXT_GREY_500 as string}
+            style={undefined}
+          />
+        ),
+        onPress: () => {
+          setDeleteModalVisible(true);
+        },
+        rightIcon: undefined,
+      },
+    ];
+  }, [userId]);
+
+  const handleDeleteAccount = async () => {
+    if (!userId) return;
+    try {
+      setDeleteModalVisible(false);
+      const response = await axios.delete(API_ENDPOINTS.DELETE_PROFILE(userId));
+      if (response.data && response.data.result === true) {
+        dispatch(logout());
+      }
+    } catch (error: any) {
+      console.error('Error deleting account:', error.message);
+    }
+  };
+
   return (
     <ScreenWrapper
       backgroundColor={ColorPalette.WHITE}
@@ -464,7 +500,7 @@ const AccountScreen = () => {
         style={styles.mainContainer}
         contentContainerStyle={[
           styles.scrollContent,
-          {paddingBottom: getScreenHeight(15)}, // Increased padding to prevent cut-off
+          { paddingBottom: getScreenHeight(15) }, // Increased padding to prevent cut-off
         ]}
         showsVerticalScrollIndicator={false}>
         <View style={styles.profileContainer}>
@@ -482,20 +518,19 @@ const AccountScreen = () => {
                   }}>
                   <LinearGradient
                     colors={['#FF4B7A', '#7C5CFF']}
-                    start={{x: 0, y: 0}}
-                    end={{x: 1, y: 1}}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
                     style={styles.imageContainer}>
                     <UserIcon width={26} height={26} style={undefined} />
                   </LinearGradient>
                   <Typography
-                    text={`${profileData?.firstname || 'User'} ${
-                      profileData?.lastname || ''
-                    }`}
+                    text={`${profileData?.firstname || 'User'} ${profileData?.lastname || ''
+                      }`}
                     variant={TypographyVariant.LMEDIUM_MEDIUM}
                     customTextStyles={{
                       fontSize: 17,
                     }}
-                    // customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
+                  // customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
                   />
                   {/* <Typography
                     text={profileData?.phone || ''}
@@ -509,7 +544,7 @@ const AccountScreen = () => {
                   onPress={() => {
                     navigate('MainScreens', {
                       screen: 'Account',
-                      params: {screen: 'PersonalInfo'},
+                      params: { screen: 'PersonalInfo' },
                     });
                   }}
                   variant={ButtonVariant.PRIMARY}
@@ -547,16 +582,16 @@ const AccountScreen = () => {
                 }}>
                 <LinearGradient
                   colors={['#FF4B7A', '#7C5CFF']}
-                  start={{x: 0, y: 0}}
-                  end={{x: 1, y: 1}}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
                   style={styles.imageContainer}>
                   <UserIcon width={26} height={26} style={undefined} />
                 </LinearGradient>
-                <View style={{gap: getScreenHeight(0.2)}}>
+                <View style={{ gap: getScreenHeight(0.2) }}>
                   <Typography
                     text={`Welcome, Guest`}
                     variant={TypographyVariant.H6_SEMIBOLD}
-                    // customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
+                  // customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
                   />
                   <Typography
                     text={`Sign in to track your orders, wishlist and rewards.`}
@@ -637,7 +672,7 @@ const AccountScreen = () => {
                   image={item.image}
                   rightIcon={item.rightIcon}
                   onPress={item.onPress}
-                  textStyle={{color: ColorPalette.GREY_TEXT_500}}
+                  textStyle={{ color: ColorPalette.GREY_TEXT_500 }}
                   variant={TypographyVariant.LMEDIUM_MEDIUM}
                   containerStyle={{
                     paddingVertical: getScreenHeight(1.5),
@@ -684,7 +719,7 @@ const AccountScreen = () => {
                 image={item.image}
                 rightIcon={item.rightIcon}
                 onPress={item.onPress}
-                textStyle={{color: ColorPalette.GREY_TEXT_500}}
+                textStyle={{ color: ColorPalette.GREY_TEXT_500 }}
                 variant={TypographyVariant.LMEDIUM_MEDIUM}
                 containerStyle={{
                   paddingVertical: getScreenHeight(1.5),
@@ -710,6 +745,32 @@ const AccountScreen = () => {
               paddingVertical: getScreenHeight(0),
             },
           ]}>
+          {deleteAccountItem.map((item, index) => (
+            <MenuItem
+              key={`other-${index}`}
+              label={item.label}
+              image={item.image}
+              rightIcon={item.rightIcon}
+              onPress={item.onPress}
+              textStyle={{
+                color: ColorPalette.GREY_TEXT_500,
+                paddingVertical: getScreenHeight(0.1),
+              }}
+              variant={TypographyVariant.LMEDIUM_MEDIUM}
+              containerStyle={{
+                paddingVertical: getScreenHeight(1.5),
+                paddingHorizontal: getScreenWidth(4),
+              }}
+              leftIcon={item.leftIcon}
+              testID={`delete-menu-item-${index}`}
+              contentStyle={undefined}
+              leftIconContainerStyle={styles.menuIconContainer}
+              rightIconContainerStyle={undefined}
+              subtitle={undefined}
+              leftIconBackgroundColor="#F3F4F6"
+              showBottomBorder={true}
+            />
+          ))}
           {logOutItem.map((item, index) => (
             <MenuItem
               key={`other-${index}`}
@@ -744,6 +805,15 @@ const AccountScreen = () => {
         title="Log Out"
         message="Are you sure you want to log out?"
         confirmText="Log Out"
+        cancelText="Cancel"
+      />
+      <ConfirmationModal
+        isVisible={isDeleteModalVisible}
+        onClose={() => setDeleteModalVisible(false)}
+        onConfirm={handleDeleteAccount}
+        title="Delete Account"
+        message="Are you sure you want to delete your account? This action cannot be undone."
+        confirmText="Delete"
         cancelText="Cancel"
       />
       <SupportChoiceModal

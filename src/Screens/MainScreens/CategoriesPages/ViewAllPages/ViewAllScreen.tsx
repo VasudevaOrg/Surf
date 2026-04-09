@@ -143,18 +143,37 @@ const ViewAllScreen: React.FC = () => {
 
   const handleCategoryPress = useCallback(
     (sub: any) => {
-      navigate('MainScreens', {
-        screen: 'Search',
-        params: {
-          screen: 'SearchResultScreen',
+      const hasSubcategories =
+        sub.subcategories && sub.subcategories.length > 0;
+
+      if (hasSubcategories) {
+        // Go deeper into subcategories
+        navigate('MainScreens', {
+          screen: 'Categories',
           params: {
-            category,
-            subCategory: sub.category,
-            categoryOptions: [],
-            category_id: sub.category_id,
+            screen: 'ViewAllScreen',
+            params: {
+              category: sub.category,
+              categoryId: sub.category_id,
+              subcategories: sub.subcategories,
+            },
           },
-        },
-      } as any);
+        } as any);
+      } else {
+        // Go to search results
+        navigate('MainScreens', {
+          screen: 'Search',
+          params: {
+            screen: 'SearchResultScreen',
+            params: {
+              category,
+              subCategory: sub.category,
+              categoryOptions: [],
+              category_id: sub.category_id,
+            },
+          },
+        } as any);
+      }
     },
     [category],
   );
