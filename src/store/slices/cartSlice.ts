@@ -316,11 +316,15 @@ const cartSlice = createSlice({
       );
       state.total = newTotal;
       state.format_total = `€${newTotal.toFixed(2)}`;
+      state.subtotal = newTotal;
+      state.format_subtotal = `€${newTotal.toFixed(2)}`;
     },
     clearGuestCart: state => {
       state.guestCartItems = [];
       state.total = 0;
       state.format_total = '€0.00';
+      state.subtotal = 0;
+      state.format_subtotal = '€0.00';
     },
     removeGuestItem: (state, action: PayloadAction<string>) => {
       state.guestCartItems = state.guestCartItems.filter(
@@ -340,6 +344,8 @@ const cartSlice = createSlice({
       );
       state.total = newTotal;
       state.format_total = `€${newTotal.toFixed(2)}`;
+      state.subtotal = newTotal;
+      state.format_subtotal = `€${newTotal.toFixed(2)}`;
     },
     updateGuestQuantity: (
       state,
@@ -368,6 +374,8 @@ const cartSlice = createSlice({
         );
         state.total = newTotal;
         state.format_total = `€${newTotal.toFixed(2)}`;
+        state.subtotal = newTotal;
+        state.format_subtotal = `€${newTotal.toFixed(2)}`;
       }
     },
     setError: (state, action: PayloadAction<string | null>) => {
