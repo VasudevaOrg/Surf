@@ -300,7 +300,7 @@ const AccountScreen = () => {
     () => [
       {
         label: 'Help center',
-        subtitle: 'chat & contact us',
+        subtitle: 'Chat & contact us',
         image: undefined,
         leftIcon: (
           <InfoIcon
@@ -553,6 +553,8 @@ const AccountScreen = () => {
                     variant={TypographyVariant.LMEDIUM_MEDIUM}
                     customTextStyles={{
                       fontSize: 17,
+                      lineHeight: 22,
+                      textAlignVertical: 'center',
                     }}
                   // customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
                   />
