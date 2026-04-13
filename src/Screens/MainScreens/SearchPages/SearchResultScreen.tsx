@@ -84,7 +84,7 @@ const CustomSearchBox = React.memo(
           iconStroke={2}
           placeholderColor={ColorPalette.TEXT_GREY_100 as string}
           editable={true}
-          autoFocus={false}
+          autoFocus={!value}
           onSubmitEditing={onSubmitEditing}
         />
         <View style={styles.micIconContainer}>

@@ -21,7 +21,10 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
   onSubmitEditing,
 }) => {
   return (
-    <View style={[styles.container, customContainerStyle]} testID={testID}>
+    <View
+      style={[styles.container, customContainerStyle]}
+      testID={testID}
+      pointerEvents={editable ? 'auto' : 'none'}>
       <SearchIcon
         size={iconSize}
         color={iconColor}
