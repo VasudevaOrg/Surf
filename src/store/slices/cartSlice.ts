@@ -36,6 +36,8 @@ interface CartState {
   user_data: any;
   isLoading: boolean;
   error: string | null;
+  savedCartItems: CartItem[]; // Items to restore after Buy Now
+  isBuyNowSession: boolean;
 }
 
 const initialState: CartState = {
@@ -51,6 +53,8 @@ const initialState: CartState = {
   user_data: null,
   isLoading: false,
   error: null,
+  savedCartItems: [],
+  isBuyNowSession: false,
 };
 
 
@@ -94,10 +98,16 @@ export const addItemToCart = createAsyncThunk(
       const state = getState() as RootState;
       const currentItems = state.cart.cartItems;
 
-      const productData = currentItems.map((item: any) => ({
-        product_id: String(item.product_id),
-        amount: parseInt(item.amount) || 1,
-      }));
+      const productData = currentItems.map((item: any) => {
+        const payload: any = {
+          product_id: String(item.product_id),
+          amount: parseInt(item.amount) || 1,
+        };
+        if (item.item_id) payload.item_id = String(item.item_id);
+        if (item.product_options) payload.product_options = item.product_options;
+        if (item.extra) payload.extra = item.extra;
+        return payload;
+      });
 
       // 2. Pass to service
       const result = await (addToCartService as any)(
@@ -110,10 +120,10 @@ export const addItemToCart = createAsyncThunk(
       if (!result.success) return rejectWithValue(result.message);
 
       // DISPATCH FETCH TO GET NEW ITEM_IDs
-      dispatch(fetchCart(userId));
+      await dispatch(fetchCart(userId));
       return result;
     } catch (error: any) {
-      dispatch(fetchCart(userId));
+      await dispatch(fetchCart(userId));
       return rejectWithValue(error.message);
     }
   },
@@ -135,10 +145,16 @@ export const updateCartQuantityThunk = createAsyncThunk(
       const state = getState() as RootState;
       const currentItems = state.cart.cartItems;
 
-      const productData = currentItems.map((item: any) => ({
-        product_id: String(item.product_id),
-        amount: parseInt(item.amount) || 1,
-      }));
+      const productData = currentItems.map((item: any) => {
+        const payload: any = {
+          product_id: String(item.product_id),
+          amount: parseInt(item.amount) || 1,
+        };
+        if (item.item_id) payload.item_id = String(item.item_id);
+        if (item.product_options) payload.product_options = item.product_options;
+        if (item.extra) payload.extra = item.extra;
+        return payload;
+      });
 
       // 2. Call service.
       const result = await updateCartQuantityService(
@@ -149,13 +165,14 @@ export const updateCartQuantityThunk = createAsyncThunk(
       );
 
       if (!result.success) {
-        dispatch(fetchCart(userId));
+        await dispatch(fetchCart(userId));
         return rejectWithValue(result.message);
       }
 
+      await dispatch(fetchCart(userId));
       return result;
     } catch (error: any) {
-      dispatch(fetchCart(userId));
+      await dispatch(fetchCart(userId));
       return rejectWithValue(error.message);
     }
   },
@@ -171,14 +188,14 @@ export const removeItemFromCart = createAsyncThunk(
       const result = await removeFromCartService(userId, itemId);
 
       if (!result.success) {
-        dispatch(fetchCart(userId));
+        await dispatch(fetchCart(userId));
         return rejectWithValue(result.message);
       }
 
-      dispatch(fetchCart(userId));
+      await dispatch(fetchCart(userId));
       return result;
     } catch (error: any) {
-      dispatch(fetchCart(userId));
+      await dispatch(fetchCart(userId));
       return rejectWithValue(error.message);
     }
   },
@@ -201,6 +218,51 @@ export const clearCartThunk = createAsyncThunk(
     }
   },
 );
+
+export const restoreSavedCart = createAsyncThunk(
+  'cart/restoreSavedCart',
+  async (userId: string | number, { dispatch, getState, rejectWithValue }) => {
+    try {
+      const state = getState() as RootState;
+      const itemsToRestore = state.cart.savedCartItems;
+
+      if (!itemsToRestore || itemsToRestore.length === 0) {
+        // Just clear the current session item if any and end
+        await clearCartService(userId);
+        dispatch(clearCart());
+        dispatch(endBuyNowSession());
+        return { success: true };
+      }
+
+      // 1. Clear current Buy Now product from server
+      await clearCartService(userId);
+
+      // 2. Add saved items back in bulk
+      const productData = itemsToRestore.map((item: any) => ({
+        product_id: String(item.product_id),
+        amount: parseInt(item.amount) || 1,
+        ...(item.product_options && { product_options: item.product_options }),
+      }));
+
+      const result = await (addToCartService as any)(0, userId, 0, productData);
+
+      if (!result.success) {
+        return rejectWithValue(result.message);
+      }
+
+      // 3. Finalize
+      dispatch(clearSavedCart());
+      dispatch(endBuyNowSession());
+      await dispatch(fetchCart(userId));
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Restore cart error:', error);
+      return rejectWithValue(error.message);
+    }
+  },
+);
+
 
 const cartSlice = createSlice({
   name: 'cart',
@@ -316,7 +378,19 @@ const cartSlice = createSlice({
       return {
         ...initialState,
         guestCartItems: state.guestCartItems || [],
+        savedCartItems: state.savedCartItems || [], // Preserving saved items across regular clears
+        isBuyNowSession: state.isBuyNowSession,
       };
+    },
+    startBuyNowSession: (state, action: PayloadAction<CartItem[]>) => {
+      state.isBuyNowSession = true;
+      state.savedCartItems = action.payload;
+    },
+    endBuyNowSession: state => {
+      state.isBuyNowSession = false;
+    },
+    clearSavedCart: state => {
+      state.savedCartItems = [];
     },
   },
   extraReducers: builder => {
@@ -494,5 +568,8 @@ export const {
   updateGuestQuantity,
   setError,
   clearCart,
+  startBuyNowSession,
+  endBuyNowSession,
+  clearSavedCart,
 } = cartSlice.actions;
 export default cartSlice.reducer;

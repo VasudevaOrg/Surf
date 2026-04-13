@@ -1,13 +1,13 @@
-import React, {useState, useEffect} from 'react';
-import {View, TouchableOpacity, ActivityIndicator} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import axios from 'axios';
-import {useSelector} from 'react-redux';
-import {RootState} from '../../../../../store';
-import {API_ENDPOINTS} from '../../../../../config/ApiConfig';
-import {styles} from './PaymentStep.styles';
-import {useNavigation} from '@react-navigation/native';
-import {Typography} from '../../../../../components/MainComponents/Typography/Typography';
-import {TypographyVariant} from '../../../../../components/MainComponents/Typography/Typography.types';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../../../store';
+import { API_ENDPOINTS } from '../../../../../config/ApiConfig';
+import { styles } from './PaymentStep.styles';
+import { useNavigation } from '@react-navigation/native';
+import { Typography } from '../../../../../components/MainComponents/Typography/Typography';
+import { TypographyVariant } from '../../../../../components/MainComponents/Typography/Typography.types';
 import ColorPalette from '../../../../../config/ColorPalette';
 import {
   getScreenHeight,
@@ -28,15 +28,16 @@ import {
   ButtonType,
   ButtonVariant,
 } from '../../../../../components/MainComponents/Button';
-import {BorderRadius, Spacing} from '../../../../../config/globalStyles';
+import { BorderRadius, Spacing } from '../../../../../config/globalStyles';
 import ChevronIcon from '../../../../../assets/icons/ChevronIcon';
 import PaymentMethodRow from '../../../../../components/CustomComponents/CartComponents/PaymentComponents/PaymentMethodRow/PaymentMethodRow';
 import ShippingMethodRow from '../../../../../components/CustomComponents/CartComponents/PaymentComponents/ShippingMethodRow/ShippingMethodRow';
-import {getCheckoutData} from '../../../../../services/CartService';
+import { getCheckoutData } from '../../../../../services/CartService';
 import ShieldIcon from '../../../../../assets/icons/ShieldIcon';
 import CardIcon from '../../../../../assets/icons/CardIcon';
 import PaypalIcon from '../../../../../assets/icons/PaypalIcon';
 import RoundedCheckIcon from '../../../../../assets/icons/RoundedCheckIcon';
+import TruckDeliveryIcon from '../../../../../assets/icons/TruckDeliveryIcon';
 
 interface PaymentStepProps {
   selectedShippingMethod?: any;
@@ -134,6 +135,24 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
     setSameAsShipping(!sameAsShipping);
   };
 
+  const getPaymentIcon = (method: any) => {
+    const name = (method.payment || '').toLowerCase();
+    if (name.includes('cash') || name.includes('cod') || name.includes('delivery')) {
+      return <TruckDeliveryIcon size={24} color={ColorPalette.TEXT_GREY_500} />;
+    }
+    if (name.includes('card') || name.includes('credit') || name.includes('stripe')) {
+      return <CardIcon size={24} color={ColorPalette.TEXT_GREY_500} />;
+    }
+    if (name.includes('revolut')) {
+      return <RevolutIcon size={24} color={ColorPalette.TEXT_GREY_500} />;
+    }
+    if (name.includes('paypal')) {
+      return <PaypalIcon size={24} color={ColorPalette.TEXT_GREY_500} />;
+    }
+    return undefined; // fallback to default image if none match and no image provided
+  };
+
+
   return (
     <View style={styles.container}>
       <View style={styles.trustIndicator}>
@@ -145,7 +164,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
         <Typography
           text="100% Safe & Secure Payments"
           variant={TypographyVariant.LMEDIUM_REGULAR}
-          customTextStyles={{color: ColorPalette.GREEN_300}}
+          customTextStyles={{ color: ColorPalette.GREEN_300 }}
         />
       </View>
 
@@ -161,7 +180,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
           <Typography
             text="Select Payment Method"
             variant={TypographyVariant.H6_MEDIUM}
-            customTextStyles={{color: ColorPalette.PAYMENT_COLOR}}
+            customTextStyles={{ color: ColorPalette.PAYMENT_COLOR }}
           />
         </View>
 
@@ -174,18 +193,19 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
                   selectedPaymentMethod?.payment_id === method.payment_id
                 }
                 onPress={() => handlePaymentSelection(method)}
-                imageSource={method.image ? {uri: method.image} : undefined}>
+                imageSource={method.image ? { uri: method.image } : undefined}
+                iconComponent={!method.image ? getPaymentIcon(method) : undefined}>
                 <View style={styles.paymentLabelContainer}>
                   <Typography
                     text={method.payment}
                     variant={TypographyVariant.LMEDIUM_MEDIUM}
-                    customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+                    customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
                   />
                   {method.description ? (
                     <Typography
                       text={method.description}
                       variant={TypographyVariant.PSMALL_REGULAR}
-                      customTextStyles={{color: ColorPalette.TEXT_GREY_300}}
+                      customTextStyles={{ color: ColorPalette.TEXT_GREY_300 }}
                     />
                   ) : null}
                 </View>
@@ -269,19 +289,19 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
         <Typography
           text="Price Details"
           variant={TypographyVariant.H6_MEDIUM}
-          customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+          customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
         />
         <View style={styles.rateRow}>
           <View style={styles.billRow}>
             <Typography
               text="Product Price (Incl. of tax)"
               variant={TypographyVariant.LMEDIUM_REGULAR}
-              customTextStyles={{color: ColorPalette.TEXT_GREY_100}}
+              customTextStyles={{ color: ColorPalette.TEXT_GREY_100 }}
             />
             <Typography
               text={checkoutData?.cart?.format_subtotal || '€0.00'}
               variant={TypographyVariant.PMEDIUM_SEMIBOLD}
-              customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+              customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
             />
           </View>
           <View style={styles.billRow}>
@@ -296,7 +316,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
             <Typography
               text={formatShipping}
               variant={TypographyVariant.PMEDIUM_SEMIBOLD}
-              customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+              customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
             />
           </View>
           {parseFloat(checkoutData?.cart?.tax || 0) > 0 && (
@@ -315,7 +335,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
                   `€${checkoutData?.cart?.tax}`
                 }
                 variant={TypographyVariant.PMEDIUM_SEMIBOLD}
-                customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+                customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
               />
             </View>
           )}
@@ -332,7 +352,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
               <Typography
                 text={computedTotals?.format_fee || `€${computedTotals?.fee}`}
                 variant={TypographyVariant.PMEDIUM_SEMIBOLD}
-                customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+                customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
               />
             </View>
           )}
@@ -349,7 +369,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
               <Typography
                 text={checkoutData?.cart?.format_subtotal_discount || '€0.00'}
                 variant={TypographyVariant.H6_MEDIUM}
-                customTextStyles={{color: ColorPalette.GREEN_200}}
+                customTextStyles={{ color: ColorPalette.GREEN_200 }}
               />
             </View>
           )}
@@ -358,11 +378,11 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
         <View style={styles.divider} />
 
         <View style={styles.orderRow}>
-          <View style={{flexDirection: 'column', gap: getScreenHeight(0.3)}}>
+          <View style={{ flexDirection: 'column', gap: getScreenHeight(0.3) }}>
             <Typography
               text="Order Total"
               variant={TypographyVariant.H6_SEMIBOLD}
-              // customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
+            // customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
             />
             <Typography
               text="Incl. all taxes and charges"
@@ -376,7 +396,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
           <Typography
             text={computedTotals?.format_total || formatTotal}
             variant={TypographyVariant.H6_SEMIBOLD}
-            customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+            customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
           />
         </View>
       </View>

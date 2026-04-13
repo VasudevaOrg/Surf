@@ -139,84 +139,68 @@ const WishListScreen = () => {
 
   const toggleFavorite = useCallback(
     async (productId: string) => {
+      if (!userId) {
+        showToast(ToastMessages.CommonToastMessages.loginToAddWishlist, 'error');
+        return;
+      }
+
       const isAdding = !favorites[productId];
+      const previousState = favorites[productId];
 
       setFavorites(prev => ({
         ...prev,
         [productId]: isAdding,
       }));
 
-      if (isAdding) {
-        if (!userId) {
-          if (Platform.OS === 'android') {
-            showToast(
-              ToastMessages.CommonToastMessages.loginToAddWishlist,
-              'error',
-            );
+      try {
+        if (isAdding) {
+          const result = await addToWishlist(userId, productId);
+          if (result && result.success) {
+            showToast(ToastMessages.ProductDetailScreen.wishlistAdded, 'success');
+            fetchWishlist();
           } else {
             showToast(
-              ToastMessages.CommonToastMessages.loginToAddWishlist,
-              'error',
-            );
-          }
-          setFavorites(prev => ({
-            ...prev,
-            [productId]: false,
-          }));
-          return;
-        }
-        const result = await addToWishlist(userId, productId);
-        if (result.success) {
-          fetchWishlist();
-        } else {
-          if (Platform.OS === 'android') {
-            showToast(
-              ToastMessages.CommonToastMessages.addToWishlistFailed(
-                result.message,
+              ToastMessages.ProductDetailScreen.wishlistFailed(
+                result?.message || 'Failed to add',
               ),
               'error',
             );
-          } else {
-            showToast(
-              ToastMessages.CommonToastMessages.addToWishlistFailed(
-                result.message,
-              ),
-              'error',
-            );
-          }
-          setFavorites(prev => ({
-            ...prev,
-            [productId]: false,
-          }));
-        }
-      } else {
-        const cartId = productCartIds[productId];
-        if (cartId && userId) {
-          const result = await removeFromWishlist(userId, cartId);
-          if (result.success) {
-            setProducts(prev => prev.filter(p => p.id !== productId));
-          } else {
-            if (Platform.OS === 'android') {
-              showToast(
-                ToastMessages.CommonToastMessages.removeFromWishlistFailed(
-                  result.message,
-                ),
-                'error',
-              );
-            } else {
-              showToast(
-                ToastMessages.CommonToastMessages.removeFromWishlistFailed(
-                  result.message,
-                ),
-                'error',
-              );
-            }
             setFavorites(prev => ({
               ...prev,
-              [productId]: true,
+              [productId]: false,
             }));
           }
+        } else {
+          const cartId = productCartIds[productId];
+          if (cartId && userId) {
+            const result = await removeFromWishlist(userId, cartId);
+            if (result && result.success) {
+              showToast(
+                ToastMessages.ProductDetailScreen.wishlistRemoved,
+                'error',
+              );
+              setProducts(prev => prev.filter(p => p.id !== productId));
+            } else {
+              showToast(
+                ToastMessages.ProductDetailScreen.wishlistFailed(
+                  result?.message || 'Failed to remove',
+                ),
+                'error',
+              );
+              setFavorites(prev => ({
+                ...prev,
+                [productId]: true,
+              }));
+            }
+          }
         }
+      } catch (error) {
+        console.error('Toggle favorite error:', error);
+        showToast(ToastMessages.CommonToastMessages.unexpectedError, 'error');
+        setFavorites(prev => ({
+          ...prev,
+          [productId]: previousState,
+        }));
       }
     },
     [userId, favorites, productCartIds, fetchWishlist],

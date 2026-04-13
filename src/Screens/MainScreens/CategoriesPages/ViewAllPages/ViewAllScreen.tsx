@@ -7,7 +7,7 @@ import { getScreenHeight } from '../../../../helpers/screenSize';
 import { styles } from './ViewAllScreen.styles';
 import { Header } from '../../../../components/CustomComponents/Header/Header';
 import ArrowLeftIcon from '../../../../assets/icons/ArrowLeft';
-import SearchIcon from '../../../../assets/icons/SearchIcon';
+import { CartIcon } from '../../../../assets/icons/BottomNavIcons';
 import ColorPalette from '../../../../config/ColorPalette';
 import { goBack } from '../../../../utils/navigationref';
 import { Typography } from '../../../../components/MainComponents/Typography/Typography';
@@ -195,8 +195,8 @@ const ViewAllScreen: React.FC = () => {
         }
         rightIcons={[
           {
-            icon: SearchIcon,
-            onPress: () => console.log('Search pressed'),
+            icon: CartIcon,
+            onPress: () => navigate('Cart' as never),
             size: 20,
             color: ColorPalette.TEXT_GREY_400,
             strokeWidth: 2,

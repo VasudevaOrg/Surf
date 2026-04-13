@@ -189,7 +189,11 @@ export const transformHomeData = (apiData: any) => {
       }
       return null;
     })(),
-    // Add main_categories from API response
-    main_categories: apiData.main_categories || [],
+    // Add main_categories from API response, handling both array and object formats
+    main_categories: apiData.main_categories
+      ? Array.isArray(apiData.main_categories)
+        ? apiData.main_categories
+        : Object.values(apiData.main_categories)
+      : [],
   };
 };

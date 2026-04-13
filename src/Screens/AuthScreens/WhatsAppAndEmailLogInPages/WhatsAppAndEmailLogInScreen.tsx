@@ -1,15 +1,15 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {ScrollView, View, Alert, TouchableOpacity} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {Header} from '../../../components/CustomComponents/Header/Header';
-import {TypographyVariant} from '../../../components/MainComponents/Typography/Typography.types';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ScrollView, View, Alert, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Header } from '../../../components/CustomComponents/Header/Header';
+import { TypographyVariant } from '../../../components/MainComponents/Typography/Typography.types';
 import ColorPalette from '../../../config/ColorPalette';
-import {goBack, navigate} from '../../../utils/navigationref';
+import { goBack, navigate } from '../../../utils/navigationref';
 import ArrowLeftIcon from '../../../assets/icons/ArrowLeft';
-import {getScreenHeight, getScreenWidth} from '../../../helpers/screenSize';
-import {Typography} from '../../../components/MainComponents/Typography/Typography';
-import {TextButton} from '../../../components/MainComponents/TextButton/TextButton';
-import {STATIC_TEXT} from '../../../config/staticText';
+import { getScreenHeight, getScreenWidth } from '../../../helpers/screenSize';
+import { Typography } from '../../../components/MainComponents/Typography/Typography';
+import { TextButton } from '../../../components/MainComponents/TextButton/TextButton';
+import { STATIC_TEXT } from '../../../config/staticText';
 import {
   Button,
   ButtonSize,
@@ -19,36 +19,36 @@ import {
 } from '../../../components/MainComponents/Button';
 import GoogleLogo from '../../../assets/icons/GoogleLogo';
 import AnimatedTextInput from '../../../components/MainComponents/TextInput/TextInput';
-import {styles} from './WhatsAppAndEmailLogInScreen.styles';
-import {BorderRadius, Spacing} from '../../../config/globalStyles';
-import {SelectCountryModal} from '../../../components/CustomComponents/SelectCountryModal/SelectCountryModal';
-import {useDispatch} from 'react-redux';
-import {setGuest, setAuth} from '../../../store/slices/authSlice';
-import {googleLogin} from '../../../services/AuthService';
-import {Badge} from '../../../components/MainComponents/Badges/Badge';
+import { styles } from './WhatsAppAndEmailLogInScreen.styles';
+import { BorderRadius, Spacing } from '../../../config/globalStyles';
+import { SelectCountryModal } from '../../../components/CustomComponents/SelectCountryModal/SelectCountryModal';
+import { useDispatch } from 'react-redux';
+import { setGuest, setAuth } from '../../../store/slices/authSlice';
+import { googleLogin } from '../../../services/AuthService';
+import { Badge } from '../../../components/MainComponents/Badges/Badge';
 import {
   BadgeType,
   BadgeVariant,
 } from '../../../components/MainComponents/Badges/Badge.types';
-import {navigateToMain} from '../../../utils/navigationref';
-import {API_ENDPOINTS} from '../../../config/ApiConfig';
+import { navigateToMain } from '../../../utils/navigationref';
+import { API_ENDPOINTS } from '../../../config/ApiConfig';
 import {
   GoogleSignin,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
 import CheckIcon from '../../../assets/icons/CheckIcon';
 import Toast from 'react-native-toast-message';
-import {useSelector} from 'react-redux';
-import {RootState} from '../../../store';
-import {showToast} from '../../../components/MainComponents/Toast/ToastHelper';
-import {ToastMessages} from '../../../components/MainComponents/Toast/ToastMessages';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { showToast } from '../../../components/MainComponents/Toast/ToastHelper';
+import { ToastMessages } from '../../../components/MainComponents/Toast/ToastMessages';
 
 const INITIAL_COUNTRY_CODE = '+356';
 const MALTA_FLAG_URL = '🇲🇹';
 const whatsAppScreenType = STATIC_TEXT.screens.screenType.whatsApp;
 const emailScreenType = STATIC_TEXT.screens.screenType.email;
 
-const WhatsAppAndEmailLogInScreen = ({route}: any) => {
+const WhatsAppAndEmailLogInScreen = ({ route }: any) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [countryCode, setCountryCode] = useState(INITIAL_COUNTRY_CODE);
   const [countryFlag, setCountryFlag] = useState(MALTA_FLAG_URL);
@@ -109,7 +109,7 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
     }
   }, [phoneNumber, email, activeTab]);
 
-  const {pageIds} = useSelector((state: RootState) => state.app);
+  const { pageIds } = useSelector((state: RootState) => state.app);
 
   const handleTermsPress = useCallback(() => {
     if (pageIds?.terms_and_conditions_page) {
@@ -117,6 +117,8 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
         url: pageIds.terms_and_conditions_page,
         title: 'Terms & Conditions',
       });
+    } else {
+      showToast('Terms & Conditions not available', 'info');
     }
   }, [pageIds]);
 
@@ -126,6 +128,8 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
         url: pageIds.privacy_policy_page,
         title: 'Privacy Policy',
       });
+    } else {
+      showToast('Privacy Policy not available', 'info');
     }
   }, [pageIds]);
 
@@ -152,7 +156,7 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
         console.log('Sending WhatsApp OTP to:', fullPhoneNumber);
 
         // Dynamic import to avoid circular dependency issues if any, or just standard import
-        const {sendWhatsAppOtp} = require('../../../services/AuthService');
+        const { sendWhatsAppOtp } = require('../../../services/AuthService');
         const response = await sendWhatsAppOtp(fullPhoneNumber);
 
         console.log('WhatsApp OTP Response:', response);
@@ -205,7 +209,7 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({email: email}),
+          body: JSON.stringify({ email: email }),
         });
 
         const data = await response.json();
@@ -320,7 +324,7 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
   };
 
   return (
-    <SafeAreaView style={{flex: 1}} edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
       <Header
         name=""
         variant={TypographyVariant.PMEDIUM_BOLD}
@@ -350,7 +354,7 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
         style={styles.mainContainer}
         contentContainerStyle={[
           styles.scrollContent,
-          {paddingBottom: getScreenHeight(4)},
+          { paddingBottom: getScreenHeight(4) },
         ]}
         showsVerticalScrollIndicator={false}>
         <View
@@ -400,11 +404,11 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
         {activeTab === 'whatsapp' && (
           <>
             <View
-              style={{gap: getScreenHeight(1), marginTop: getScreenHeight(2)}}>
+              style={{ gap: getScreenHeight(1), marginTop: getScreenHeight(2) }}>
               <Typography
                 variant={TypographyVariant.H5_SEMIBOLD}
                 text="Enter your WhatsApp number"
-                customTextStyles={{color: ColorPalette.TEXT_GREY_400}}
+                customTextStyles={{ color: ColorPalette.TEXT_GREY_400 }}
               />
               <Typography
                 variant={TypographyVariant.LMEDIUM_REGULAR}
@@ -427,8 +431,8 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
                 countryFlag={countryFlag}
                 onCountryPress={handleCountryPress}
                 error={error}
-                // autoFocus
-                // customContainerStyles={{  }}
+              // autoFocus
+              // customContainerStyles={{  }}
               />
             </View>
           </>
@@ -437,11 +441,11 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
         {activeTab === 'email' && (
           <>
             <View
-              style={{gap: getScreenHeight(1), marginTop: getScreenHeight(2)}}>
+              style={{ gap: getScreenHeight(1), marginTop: getScreenHeight(2) }}>
               <Typography
                 variant={TypographyVariant.H5_SEMIBOLD}
                 text="Enter your email ID"
-                customTextStyles={{color: ColorPalette.TEXT_GREY_400}}
+                customTextStyles={{ color: ColorPalette.TEXT_GREY_400 }}
               />
               <Typography
                 variant={TypographyVariant.LMEDIUM_REGULAR}
@@ -462,7 +466,7 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
                 customLabelColorFocused={ColorPalette.TEXT_GREY_400}
                 customBorderWidth={1}
                 error={error}
-                // customContainerStyles={{paddingHorizontal: getScreenWidth(4)}}
+              // customContainerStyles={{paddingHorizontal: getScreenWidth(4)}}
               />
             </View>
           </>
@@ -491,7 +495,7 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
           </View>
         )}
 
-        <View style={{alignItems: 'center'}}>
+        <View style={{ alignItems: 'center' }}>
           <Button
             text={isLoading ? 'Sending...' : 'Continue'}
             onPress={handleSendCode}
@@ -504,7 +508,7 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
             }
             customStyles={styles.customButton}
             withShadow={true}
-            customTextStyles={[styles.customText, {fontSize: 15}]}
+            customTextStyles={[styles.customText, { fontSize: 15 }]}
           />
         </View>
 
@@ -562,7 +566,7 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
           />
         </View> */}
 
-        <View style={[styles.termsContainer, {marginTop: getScreenHeight(20)}]}>
+        <View style={[styles.termsContainer, { marginTop: getScreenHeight(20) }]}>
           <Typography
             text={`Don't have an account? `}
             variant={TypographyVariant.LMEDIUM_REGULAR}
@@ -574,7 +578,7 @@ const WhatsAppAndEmailLogInScreen = ({route}: any) => {
             variant={TypographyVariant.PMEDIUM_SEMIBOLD}
             customTextStyles={[
               styles.linkText,
-              {textDecorationLine: 'underline', paddingVertical: 0.5},
+              { textDecorationLine: 'underline', paddingVertical: 0.5 },
             ]}
           />
         </View>

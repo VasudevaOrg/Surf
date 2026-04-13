@@ -45,6 +45,10 @@ import {
   GoogleSignin,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
+import axios from 'axios';
+import { API_ENDPOINTS } from '../../../config/ApiConfig';
+import { setSupportInfo, setPageIds } from '../../../store/slices/appSlice';
+import { showToast } from '../../../components/MainComponents/Toast/ToastHelper';
 
 const INITIAL_COUNTRY_CODE = '+356';
 const MALTA_FLAG_URL =
@@ -97,6 +101,34 @@ const PhoneNumberScreen = ({ navigation }) => {
   const dispatch = useDispatch();
 
   const { pageIds } = useSelector((state: RootState) => state.app);
+
+  useEffect(() => {
+    const fetchAppConfig = async () => {
+      if (!pageIds) {
+        try {
+          // Fetch basic home layout to get page_ids and support info
+          const response = await axios.get(
+            API_ENDPOINTS.HOME_LAYOUT(400, '', ''),
+          );
+          if (response.data && response.data.page_ids) {
+            dispatch(setPageIds(response.data.page_ids));
+          }
+          if (response.data && response.data.nt_support_whatsapp !== undefined) {
+            dispatch(
+              setSupportInfo({
+                whatsapp: response.data.nt_support_whatsapp,
+                email: response.data.nt_support_email,
+              }),
+            );
+          }
+        } catch (error) {
+          console.error('Error fetching app config in PhoneNumberScreen:', error);
+        }
+      }
+    };
+
+    fetchAppConfig();
+  }, [dispatch, pageIds]);
 
   const handleSkip = useCallback(() => {
     dispatch(setGuest(true));
@@ -179,11 +211,13 @@ const PhoneNumberScreen = ({ navigation }) => {
   }, []);
 
   const handleTermsPress = useCallback(() => {
-    if (pageIds?.terms_conditions_page) {
+    if (pageIds?.terms_and_conditions_page) {
       navigate('WebViewScreen' as any, {
-        url: pageIds.terms_conditions_page,
+        url: pageIds.terms_and_conditions_page,
         title: 'Terms & Conditions',
       });
+    } else {
+      showToast('Terms & Conditions not available', 'info');
     }
   }, [pageIds]);
 
@@ -193,6 +227,9 @@ const PhoneNumberScreen = ({ navigation }) => {
         url: pageIds.privacy_policy_page,
         title: 'Privacy Policy',
       });
+    }
+    else {
+      showToast('Privacy Policy not available', 'info');
     }
   }, [pageIds]);
 

@@ -12,6 +12,7 @@ export const styles = StyleSheet.create({
     padding: Spacing.Large,
     paddingTop: Spacing.Medium,
     marginBottom: Spacing.XLarge,
+    alignSelf: 'flex-start',
   },
   mainTwoContainer: {
     gap: getScreenWidth(3),
@@ -85,6 +86,7 @@ export const styles = StyleSheet.create({
   },
 
   iconContainer: {
+    padding: Spacing.Small,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -1,37 +1,37 @@
-import React, {useState, useRef} from 'react';
-import {View, TouchableOpacity, Image} from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, TouchableOpacity, Image } from 'react-native';
 import HeartIcon from '../../../../assets/icons/HeartIcon';
 import StarRating from '../../../../assets/icons/StarRating';
-import {Typography} from '../../../MainComponents/Typography/Typography';
-import {Button} from '../../../MainComponents/Button';
+import { Typography } from '../../../MainComponents/Typography/Typography';
+import { Button } from '../../../MainComponents/Button';
 import {
   ButtonSize,
   ButtonState,
   ButtonType,
   ButtonVariant,
 } from '../../../MainComponents/Button/Button.types';
-import {TypographyVariant} from '../../../MainComponents/Typography/Typography.types';
-import {BestSellerCardProps} from './BestSellerCard.types';
-import {createBestSellerCardStyles} from './BestSellerCard.styles';
-import {Badge} from '../../../MainComponents/Badges/Badge';
+import { TypographyVariant } from '../../../MainComponents/Typography/Typography.types';
+import { BestSellerCardProps } from './BestSellerCard.types';
+import { createBestSellerCardStyles } from './BestSellerCard.styles';
+import { Badge } from '../../../MainComponents/Badges/Badge';
 import {
   BadgeType,
   BadgeVariant,
 } from '../../../MainComponents/Badges/Badge.types';
 import ColorPalette from '../../../../config/ColorPalette';
-import {useDispatch, useSelector} from 'react-redux';
-import {RootState} from '../../../../store';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../../store';
 import {
   updateGuestQuantity,
   updateCartQuantityThunk,
   removeItemFromCart,
   removeGuestItem,
 } from '../../../../store/slices/cartSlice';
-import {toggleWishlistItem} from '../../../../store/slices/wishlistSlice';
-import {Alert} from 'react-native';
-import {useCartQuantity} from '../../../../hooks/useCartQuantity';
-import {showToast} from '../../../MainComponents/Toast/ToastHelper';
-import {ToastMessages} from '../../../MainComponents/Toast/ToastMessages';
+import { toggleWishlistItem } from '../../../../store/slices/wishlistSlice';
+import { Alert } from 'react-native';
+import { useCartQuantity } from '../../../../hooks/useCartQuantity';
+import { showToast } from '../../../MainComponents/Toast/ToastHelper';
+import { ToastMessages } from '../../../MainComponents/Toast/ToastMessages';
 
 /**
  * BestSellerCard: A reusable card component for displaying product information
@@ -69,16 +69,19 @@ const BestSellerCard: React.FC<BestSellerCardProps> = ({
   testID,
   strikethroughPrice,
   onToggleFavorite,
-  isProductDetail = false,
   id,
   stock,
+  isFavorite: isFavoriteProp,
+  isProductDetail = false,
 }) => {
   const dispatch = useDispatch<any>();
   const userId = useSelector((state: RootState) => state.auth.userId);
   const wishlistItems = useSelector((state: RootState) => state.wishlist.items);
-  const isFavorite = wishlistItems.some(
+  const isFavoriteRedux = wishlistItems.some(
     (item: any) => String(item.product_id) === String(id),
   );
+
+  const isFavorite = isFavoriteProp !== undefined ? isFavoriteProp : isFavoriteRedux;
 
   const {
     quantity: currentQuantity,
@@ -131,17 +134,16 @@ const BestSellerCard: React.FC<BestSellerCardProps> = ({
    */
   const renderImage = () => {
     if (typeof imageSource === 'string') {
-      return <Image source={{uri: imageSource}} style={styles.image} />;
+      return <Image source={{ uri: imageSource }} style={styles.image} />;
     }
     return <Image source={imageSource} style={styles.image} />;
   };
 
   const handleToggleFavorite = () => {
     if (!userId) {
-      // Handle guest
+      showToast(ToastMessages.CommonToastMessages.loginToAddWishlist, 'error');
       return;
     }
-    dispatch(toggleWishlistItem({userId, productId: id as string | number}));
     if (onToggleFavorite) {
       onToggleFavorite();
     }
@@ -156,7 +158,7 @@ const BestSellerCard: React.FC<BestSellerCardProps> = ({
         <Typography
           text="-"
           variant={TypographyVariant.LSMALL_SEMIBOLD}
-          customTextStyles={{color: ColorPalette.WHITE}}
+          customTextStyles={{ color: ColorPalette.WHITE }}
         />
       </TouchableOpacity>
       <Typography
@@ -171,7 +173,7 @@ const BestSellerCard: React.FC<BestSellerCardProps> = ({
         <Typography
           text="+"
           variant={TypographyVariant.LSMALL_SEMIBOLD}
-          customTextStyles={{color: ColorPalette.WHITE}}
+          customTextStyles={{ color: ColorPalette.WHITE }}
         />
       </TouchableOpacity>
     </View>
@@ -204,7 +206,7 @@ const BestSellerCard: React.FC<BestSellerCardProps> = ({
               text="SOLD OUT"
               variant={BadgeVariant.FILLED}
               type={BadgeType.DANGER}
-              customContainerStyle={{backgroundColor: ColorPalette.RED_100}}
+              customContainerStyle={{ backgroundColor: ColorPalette.RED_100 }}
             />
           </View>
         )}
@@ -231,7 +233,7 @@ const BestSellerCard: React.FC<BestSellerCardProps> = ({
             <Typography
               text={rating.toString()}
               variant={TypographyVariant.LSMALL_MEDIUM}
-              customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+              customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
             />
             <StarRating
               style={undefined}
@@ -247,7 +249,7 @@ const BestSellerCard: React.FC<BestSellerCardProps> = ({
           variant={titleVariant}
           text={title}
           numberOfLines={1}
-          customTextStyles={{color: ColorPalette.TEXT_GREY_300}}
+          customTextStyles={{ color: ColorPalette.TEXT_GREY_300 }}
         />
 
         <View
@@ -259,11 +261,11 @@ const BestSellerCard: React.FC<BestSellerCardProps> = ({
               paddingRight: 4,
             },
           ]}>
-          <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Typography
               variant={priceVariant}
               text={`€${typeof price === 'number' ? price.toFixed(2) : '0.00'}`}
-              customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+              customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
             />
             {typeof strikethroughPrice === 'number' && strikethroughPrice > 0 && (
               <Typography
@@ -277,11 +279,11 @@ const BestSellerCard: React.FC<BestSellerCardProps> = ({
             )}
           </View>
           {isProductDetail && (
-            <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Typography
                 text={rating.toString()}
                 variant={TypographyVariant.LSMALL_MEDIUM}
-                customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+                customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
               />
               <StarRating
                 style={undefined}
@@ -296,14 +298,14 @@ const BestSellerCard: React.FC<BestSellerCardProps> = ({
           {stock !== undefined && stock <= 0 ? (
             <Button
               text="Out of Stock"
-              onPress={() => {}}
+              onPress={() => { }}
               size={ButtonSize.SMALL}
               variant={ButtonVariant.PRIMARY}
               type={ButtonType.OUTLINED}
               state={ButtonState.DISABLED}
               customStyles={[
                 styles.customButton,
-                {borderColor: ColorPalette.TEXT_GREY_100},
+                { borderColor: ColorPalette.TEXT_GREY_100 },
               ]}
               customTextStyles={[
                 styles.customText,

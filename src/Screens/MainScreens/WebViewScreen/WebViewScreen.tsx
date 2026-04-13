@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -6,15 +6,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {WebView} from 'react-native-webview';
+import { WebView } from 'react-native-webview';
 import ArrowLeftIcon from '../../../assets/icons/ArrowLeft';
 import ColorPalette from '../../../config/ColorPalette';
-import {getScreenHeight, getScreenWidth} from '../../../helpers/screenSize';
-import {goBack} from '../../../utils/navigationref';
-import {Typography} from '../../../components/MainComponents/Typography/Typography';
-import {TypographyVariant} from '../../../components/MainComponents/Typography/Typography.types';
-import {RouteProp, useRoute} from '@react-navigation/native';
-import {DashboardStackParamList} from '../../../../types/navigation';
+import { getScreenHeight, getScreenWidth } from '../../../helpers/screenSize';
+import { goBack } from '../../../utils/navigationref';
+import { Typography } from '../../../components/MainComponents/Typography/Typography';
+import { TypographyVariant } from '../../../components/MainComponents/Typography/Typography.types';
+import { RouteProp, useRoute } from '@react-navigation/native';
+import { DashboardStackParamList } from '../../../../types/navigation';
 import ScreenWrapper from '../../../components/CustomComponents/ScreenWrapper/ScreenWrapper';
 
 type WebViewScreenRouteProp = RouteProp<
@@ -24,8 +24,57 @@ type WebViewScreenRouteProp = RouteProp<
 
 const WebViewScreen = () => {
   const route = useRoute<WebViewScreenRouteProp>();
-  const {url, title} = route.params;
+  const { url, title } = route.params;
   const [loading, setLoading] = useState(true);
+
+  const acceptCookiesJS = `
+    (function() {
+      const commonSelectors = [
+        '#onetrust-accept-btn-handler',
+        '.cc-nb-okagree',
+        '.cc-btn.cc-dismiss',
+        '#cookie-accept',
+        '.accept-all-cookies',
+        'button[id*="accept"]',
+        'button[class*="accept"]',
+        'a[id*="accept"]',
+        'a[class*="accept"]'
+      ];
+
+      function tryAccept() {
+        for (const selector of commonSelectors) {
+          const btn = document.querySelector(selector);
+          if (btn && typeof btn.click === 'function') {
+            btn.click();
+            return true;
+          }
+        }
+        return false;
+      }
+
+      // Try immediately
+      if (!tryAccept()) {
+        // If not found, try again after short delays
+        setTimeout(tryAccept, 1000);
+        setTimeout(tryAccept, 3000);
+      }
+
+      // Also use MutationObserver to catch late-loading banners
+      const observer = new MutationObserver((mutations) => {
+        if (tryAccept()) {
+          observer.disconnect();
+        }
+      });
+
+      if (document.body) {
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      }
+    })();
+    true;
+  `;
 
   return (
     <ScreenWrapper
@@ -44,10 +93,12 @@ const WebViewScreen = () => {
       </View>
 
       <WebView
-        source={{uri: url}}
+        source={{ uri: url }}
         style={styles.webview}
         onLoadStart={() => setLoading(true)}
         onLoadEnd={() => setLoading(false)}
+        injectedJavaScript={acceptCookiesJS}
+        javaScriptEnabled={true}
         startInLoadingState={true}
         renderLoading={() => (
           <View style={styles.loaderContainer}>

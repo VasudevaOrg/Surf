@@ -7,6 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import ChevronRightIcon from '../../../../assets/icons/ChevronRightIcon';
 import ColorPalette from '../../../../config/ColorPalette';
@@ -28,6 +29,7 @@ interface ImageSliderProps {
   isFavorite?: boolean;
   onAddToWishlist?: () => void;
   onShare?: () => void;
+  loading?: boolean;
 }
 
 const ImageSlider: React.FC<ImageSliderProps> = ({
@@ -38,6 +40,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
   onAddToWishlist,
   onShare,
   isFavorite = false,
+  loading = false,
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
@@ -170,24 +173,31 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
         </View>
         <View style={styles.actionsContainer}>
           <View accessibilityLabel="Add to wishlist" style={styles.mainLabel}>
-            <TouchableOpacity onPress={onAddToWishlist}>
-              <HeartIcon
-                size={20}
-                style={undefined}
-                filled={isFavorite}
-                color={
-                  (isFavorite
-                    ? ColorPalette.RED_100
-                    : ColorPalette.TEXT_GREY_400) as any
-                }
-              />
+            <TouchableOpacity onPress={onAddToWishlist} disabled={loading}>
+              {loading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={ColorPalette.ROSE_PURPLE_400}
+                />
+              ) : (
+                <HeartIcon
+                  size={20}
+                  style={undefined}
+                  filled={isFavorite}
+                  color={
+                    (isFavorite
+                      ? ColorPalette.RED_100
+                      : ColorPalette.TEXT_GREY_400) as any
+                  }
+                />
+              )}
             </TouchableOpacity>
           </View>
-          <View accessibilityLabel="Share product" style={styles.mainLabel}>
+          {/* <View accessibilityLabel="Share product" style={styles.mainLabel}>
             <TouchableOpacity onPress={onShare}>
               <ShareIcon size={20} style={undefined} />
             </TouchableOpacity>
-          </View>
+          </View> */}
         </View>
         {/* Indicators Inside White Card */}
         <View style={styles.indicatorContainer}>

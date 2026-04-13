@@ -12,6 +12,7 @@ interface PaymentMethodRowProps {
   testID?: string;
   style?: ViewStyle;
   imageSource?: any;
+  iconComponent?: React.ReactNode;
 }
 
 const PaymentMethodRow: React.FC<PaymentMethodRowProps> = ({
@@ -21,6 +22,7 @@ const PaymentMethodRow: React.FC<PaymentMethodRowProps> = ({
   testID,
   style,
   imageSource,
+  iconComponent,
 }) => {
   return (
     <TouchableOpacity
@@ -30,12 +32,19 @@ const PaymentMethodRow: React.FC<PaymentMethodRowProps> = ({
       activeOpacity={0.7}>
       <View style={styles.contentContainer}>
         <View style={styles.leftSection}>
-          <Image
-            source={
-              imageSource || require('../../../../../assets/images/paypal.png')
-            }
-            style={[styles.shippingImage]}
-          />
+          {iconComponent ? (
+            <View style={[styles.shippingImage, { justifyContent: 'center', alignItems: 'center' }]}>
+              {iconComponent}
+            </View>
+          ) : (
+            <Image
+              source={
+                imageSource || require('../../../../../assets/images/paypal.png')
+              }
+              style={[styles.shippingImage]}
+              resizeMode="contain"
+            />
+          )}
           <View style={styles.leftContent}>{children}</View>
         </View>
         <View style={styles.radioButton}>

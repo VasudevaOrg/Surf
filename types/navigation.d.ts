@@ -2,6 +2,10 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Authentication: undefined;
   MainScreens: undefined;
+  WebViewScreen: {
+    url: string;
+    title: string;
+  };
 };
 
 export type OnboardingStackParamList = {
@@ -77,7 +81,7 @@ export type AccountNavigatorParamList = {
   EditField: EditFieldParams;
   BankDetail: undefined;
   HelpSupport: undefined;
-  MyOrderDetails: {orderId: number};
+  MyOrderDetails: { orderId: number };
 };
 
 export type CartNavigatorParamList = {
@@ -108,14 +112,10 @@ export type DashboardStackParamList = {
   ProductDetail: {
     productId: string | number;
   };
-  WebViewScreen: {
-    url: string;
-    title: string;
-  };
 };
 
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList {}
+    interface RootParamList extends RootStackParamList { }
   }
 }

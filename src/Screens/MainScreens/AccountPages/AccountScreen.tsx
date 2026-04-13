@@ -6,6 +6,8 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
+  Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
@@ -17,7 +19,8 @@ import { Typography } from '../../../components/MainComponents/Typography/Typogr
 import { TypographyVariant } from '../../../components/MainComponents/Typography/Typography.types';
 import ColorPalette from '../../../config/ColorPalette';
 import { getScreenHeight, getScreenWidth } from '../../../helpers/screenSize';
-import { goBack, navigate } from '../../../utils/navigationref';
+import { goBack } from '../../../utils/navigationref';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { styles } from './AccountScreen.styles';
 import { API_ENDPOINTS } from '../../../config/ApiConfig';
 import { useState, useEffect } from 'react';
@@ -44,7 +47,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../store';
 import { ConfirmationModal } from '../../../components/CustomComponents/ConfirmationModal/ConfirmationModal';
 import { logout } from '../../../store/slices/authSlice';
-import { CommonActions } from '@react-navigation/native';
 import {
   Button,
   ButtonSize,
@@ -62,6 +64,7 @@ import { Screen } from 'react-native-screens';
 import DeleteIcon from '../../../assets/icons/DeleteIcon';
 
 const AccountScreen = () => {
+  const navigation = useNavigation<any>();
   const [profileData, setProfileData] = useState<any>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [isLogoutModalVisible, setLogoutModalVisible] = useState(false);
@@ -166,7 +169,7 @@ const AccountScreen = () => {
           />
         ),
         onPress: () => {
-          navigate('MainScreens', {
+          navigation.navigate('MainScreens', {
             screen: 'Account',
             params: { screen: 'OrderScreen' },
           });
@@ -214,7 +217,7 @@ const AccountScreen = () => {
           />
         ),
         onPress: () => {
-          navigate('MainScreens', {
+          navigation.navigate('MainScreens', {
             screen: 'Home',
             params: { screen: 'WishList' },
           });
@@ -264,7 +267,7 @@ const AccountScreen = () => {
               />
             ),
             onPress: () => {
-              navigate('MainScreens', {
+              navigation.navigate('MainScreens', {
                 screen: 'Home',
                 params: { screen: 'Notification' },
               });
@@ -291,7 +294,7 @@ const AccountScreen = () => {
       //   onPress: () => { },
       // },
     ];
-  }, [userId]);
+  }, [userId, navigation]);
 
   const otherItems = useMemo(
     () => [
@@ -335,7 +338,7 @@ const AccountScreen = () => {
         ),
         onPress: () => {
           if (pageIds?.terms_and_conditions_page) {
-            navigate('WebViewScreen', {
+            navigation.navigate('WebViewScreen', {
               url: pageIds.terms_and_conditions_page,
               title: 'Terms & Conditions',
             });
@@ -361,7 +364,7 @@ const AccountScreen = () => {
         ),
         onPress: () => {
           if (pageIds?.privacy_policy_page) {
-            navigate('WebViewScreen', {
+            navigation.navigate('WebViewScreen', {
               url: pageIds.privacy_policy_page,
               title: 'Privacy Policy',
             });
@@ -385,7 +388,16 @@ const AccountScreen = () => {
             color={ColorPalette.TEXT_GREY_400}
           />
         ),
-        onPress: () => { },
+        onPress: async () => {
+          try {
+            await Share.share({
+              message:
+                'Check out the Surf app! Download it here: ',
+            });
+          } catch (error: any) {
+            console.error('Error sharing:', error.message);
+          }
+        },
       },
       ...(pageIds?.about_us_page
         ? [
@@ -407,7 +419,7 @@ const AccountScreen = () => {
               />
             ),
             onPress: () => {
-              navigate('WebViewScreen', {
+              navigation.navigate('WebViewScreen', {
                 url: pageIds.about_us_page!,
                 title: 'About Us',
               });
@@ -416,7 +428,7 @@ const AccountScreen = () => {
         ]
         : []),
     ],
-    [pageIds],
+    [pageIds, navigation],
   );
 
   const handleLogout = () => {
@@ -477,7 +489,19 @@ const AccountScreen = () => {
       setDeleteModalVisible(false);
       const response = await axios.delete(API_ENDPOINTS.DELETE_PROFILE(userId));
       if (response.data && response.data.result === true) {
-        dispatch(logout());
+        Alert.alert(
+          'Account Deletion Request',
+          'We’ve received your request to delete your account.\nYour account will be permanently deleted within 24 hours.\nIf you did not request this, please contact support immediately.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                dispatch(logout());
+              },
+            },
+          ],
+          { cancelable: false }
+        );
       }
     } catch (error: any) {
       console.error('Error deleting account:', error.message);
@@ -542,7 +566,7 @@ const AccountScreen = () => {
                 <Button
                   text="Edit"
                   onPress={() => {
-                    navigate('MainScreens', {
+                    navigation.navigate('MainScreens', {
                       screen: 'Account',
                       params: { screen: 'PersonalInfo' },
                     });
@@ -609,10 +633,14 @@ const AccountScreen = () => {
               <Button
                 text="Login / Create Account"
                 onPress={() => {
-                  navigate('Authentication', {
-                    // phoneNumber: `${countryCode}${phoneNumber}`,
-                    screen: 'PhoneNumberScreen',
-                  });
+                  try {
+                    // Try direct navigation first
+                    navigation.navigate('Authentication', {
+                      screen: 'PhoneNumberScreen',
+                    });
+                  } catch (error) {
+                    console.log('Navigation to Authentication failed', error);
+                  }
                 }}
                 variant={ButtonVariant.PRIMARY}
                 state={ButtonState.DEFAULT}

@@ -46,6 +46,8 @@ export const ToastMessages = {
   },
 
   ProductDetailScreen: {
+    wishlistAdded: 'Product added to wishlist!',
+    wishlistRemoved: 'Product removed from wishlist!',
     wishlistSuccess: (message?: string) => message || 'Success',
     wishlistFailed: (message?: string) => message || 'Error',
     addToCartSuccess: (message?: string) => message || 'Item added to cart',

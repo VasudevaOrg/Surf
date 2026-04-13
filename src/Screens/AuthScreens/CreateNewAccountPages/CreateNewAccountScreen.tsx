@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Alert,
   Platform,
@@ -7,17 +7,17 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {styles} from './CreateNewAccountScreen.styles';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {Header} from '../../../components/CustomComponents/Header/Header';
-import {TypographyVariant} from '../../../components/MainComponents/Typography/Typography.types';
+import { styles } from './CreateNewAccountScreen.styles';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Header } from '../../../components/CustomComponents/Header/Header';
+import { TypographyVariant } from '../../../components/MainComponents/Typography/Typography.types';
 import ColorPalette from '../../../config/ColorPalette';
-import {goBack, navigate} from '../../../utils/navigationref';
+import { goBack, navigate } from '../../../utils/navigationref';
 import ArrowLeftIcon from '../../../assets/icons/ArrowLeft';
-import {getScreenHeight, getScreenWidth} from '../../../helpers/screenSize';
-import {Typography} from '../../../components/MainComponents/Typography/Typography';
-import {TextButton} from '../../../components/MainComponents/TextButton';
-import {STATIC_TEXT} from '../../../config/staticText';
+import { getScreenHeight, getScreenWidth } from '../../../helpers/screenSize';
+import { Typography } from '../../../components/MainComponents/Typography/Typography';
+import { TextButton } from '../../../components/MainComponents/TextButton';
+import { STATIC_TEXT } from '../../../config/staticText';
 import {
   Button,
   ButtonSize,
@@ -27,14 +27,14 @@ import {
 } from '../../../components/MainComponents/Button';
 import GoogleLogo from '../../../assets/icons/GoogleLogo';
 import AnimatedTextInput from '../../../components/MainComponents/TextInput/TextInput';
-import {SelectCountryModal} from '../../../components/CustomComponents/SelectCountryModal/SelectCountryModal';
-import {COUNTRY_PHONE_CODES} from '../../../components/CustomComponents/SelectCountryModal/SelectCountryModal';
+import { SelectCountryModal } from '../../../components/CustomComponents/SelectCountryModal/SelectCountryModal';
+import { COUNTRY_PHONE_CODES } from '../../../components/CustomComponents/SelectCountryModal/SelectCountryModal';
 import axios from 'axios';
-import {API_ENDPOINTS} from '../../../config/ApiConfig';
-import {useSelector} from 'react-redux';
-import {RootState} from '../../../store';
-import {showToast} from '../../../components/MainComponents/Toast/ToastHelper';
-import {ToastMessages} from '../../../components/MainComponents/Toast/ToastMessages';
+import { API_ENDPOINTS } from '../../../config/ApiConfig';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { showToast } from '../../../components/MainComponents/Toast/ToastHelper';
+import { ToastMessages } from '../../../components/MainComponents/Toast/ToastMessages';
 
 const INITIAL_COUNTRY_CODE = '+356';
 const MALTA_FLAG_URL = '🇲🇹';
@@ -50,8 +50,9 @@ const CreateNewAccountScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentStatus, setCurrentStatus] = useState();
   const [selectedMethod, setSelectedMethod] = useState('email');
+  const [loading, setLoading] = useState(false);
 
-  const {pageIds} = useSelector((state: RootState) => state.app);
+  const { pageIds } = useSelector((state: RootState) => state.app);
 
   const handleTermsPress = useCallback(() => {
     if (pageIds?.terms_and_conditions_page) {
@@ -59,6 +60,8 @@ const CreateNewAccountScreen = () => {
         url: pageIds.terms_and_conditions_page,
         title: 'Terms & Conditions',
       });
+    } else {
+      showToast('Terms & Conditions not available', 'info');
     }
   }, [pageIds]);
 
@@ -89,6 +92,7 @@ const CreateNewAccountScreen = () => {
     }
 
     try {
+      setLoading(true);
       // Dynamic import to avoid circular dependency
       const {
         sendWhatsAppOtpForSignup,
@@ -160,6 +164,8 @@ const CreateNewAccountScreen = () => {
           'error',
         );
       }
+    } finally {
+      setLoading(false);
     }
   }, [
     phoneNumber,
@@ -189,7 +195,7 @@ const CreateNewAccountScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{flex: 1}} edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
       <Header
         name=""
         variant={TypographyVariant.PMEDIUM_BOLD}
@@ -202,19 +208,19 @@ const CreateNewAccountScreen = () => {
         style={styles.mainContainer}
         contentContainerStyle={[
           styles.scrollContent,
-          {paddingBottom: getScreenHeight(4)},
+          { paddingBottom: getScreenHeight(4) },
         ]}
         showsVerticalScrollIndicator={false}>
-        <View style={{gap: getScreenHeight(1)}}>
+        <View style={{ gap: getScreenHeight(1) }}>
           <Typography
             variant={TypographyVariant.H5_SEMIBOLD}
             text="Register for a new account"
-            customTextStyles={{color: ColorPalette.TEXT_GREY_400}}
+            customTextStyles={{ color: ColorPalette.TEXT_GREY_400 }}
           />
           <Typography
             variant={TypographyVariant.LMEDIUM_REGULAR}
             text="Please fill in the details below to set up your new account."
-            customTextStyles={{color: ColorPalette.TEXT_GREY_300}}
+            customTextStyles={{ color: ColorPalette.TEXT_GREY_300 }}
           />
         </View>
 
@@ -226,7 +232,7 @@ const CreateNewAccountScreen = () => {
             keyboardType="default"
             customLabelColorFocused={ColorPalette.TEXT_GREY_400 as string}
             customBorderWidth={1}
-            // customContainerStyles={{paddingHorizontal: getScreenWidth(4)}}
+          // customContainerStyles={{paddingHorizontal: getScreenWidth(4)}}
           />
           <AnimatedTextInput
             label="Last name"
@@ -235,7 +241,7 @@ const CreateNewAccountScreen = () => {
             keyboardType="default"
             customLabelColorFocused={ColorPalette.TEXT_GREY_400 as string}
             customBorderWidth={1}
-            // customContainerStyles={{paddingHorizontal: getScreenWidth(4)}}
+          // customContainerStyles={{paddingHorizontal: getScreenWidth(4)}}
           />
           <AnimatedTextInput
             label="Email id"
@@ -244,7 +250,7 @@ const CreateNewAccountScreen = () => {
             keyboardType="default"
             customLabelColorFocused={ColorPalette.TEXT_GREY_400 as string}
             customBorderWidth={1}
-            // customContainerStyles={{paddingHorizontal: getScreenWidth(4)}}
+          // customContainerStyles={{paddingHorizontal: getScreenWidth(4)}}
           />
           <AnimatedTextInput
             label="Whatsapp Number"
@@ -255,8 +261,8 @@ const CreateNewAccountScreen = () => {
             countryCode={countryCode}
             countryFlag={countryFlag}
             onCountryPress={handleCountryPress}
-            // autoFocus
-            // customContainerStyles={{  }}
+          // autoFocus
+          // customContainerStyles={{  }}
           />
           <View
             style={{
@@ -265,7 +271,7 @@ const CreateNewAccountScreen = () => {
             }}>
             <Typography
               variant={TypographyVariant.PSMALL_REGULAR}
-              customTextStyles={{color: ColorPalette.TEXT_GREY_400}}>
+              customTextStyles={{ color: ColorPalette.TEXT_GREY_400 }}>
               Select Method To Receive OTP:
             </Typography>
             <View
@@ -294,7 +300,7 @@ const CreateNewAccountScreen = () => {
                 </TouchableOpacity>
                 <Typography
                   variant={TypographyVariant.PSMALL_REGULAR}
-                  customTextStyles={{color: ColorPalette.TEXT_GREY_400}}>
+                  customTextStyles={{ color: ColorPalette.TEXT_GREY_400 }}>
                   via Email
                 </Typography>
               </View>
@@ -318,7 +324,7 @@ const CreateNewAccountScreen = () => {
                 </TouchableOpacity>
                 <Typography
                   variant={TypographyVariant.PSMALL_REGULAR}
-                  customTextStyles={{color: ColorPalette.TEXT_GREY_400}}>
+                  customTextStyles={{ color: ColorPalette.TEXT_GREY_400 }}>
                   via Phone
                 </Typography>
               </View>
@@ -326,7 +332,7 @@ const CreateNewAccountScreen = () => {
           </View>
         </View>
 
-        <View style={{alignItems: 'center'}}>
+        <View style={{ alignItems: 'center' }}>
           <Button
             text="Continue"
             onPress={handleCreateNewAccount}
@@ -335,8 +341,9 @@ const CreateNewAccountScreen = () => {
             state={ButtonState.DEFAULT}
             customStyles={styles.customButton}
             withShadow={true}
-            customTextStyles={[styles.customText, {fontSize: 15}]}
+            customTextStyles={[styles.customText, { fontSize: 15 }]}
             disabled={firstName.length === 0}
+            loading={loading}
           />
         </View>
 
@@ -396,7 +403,7 @@ const CreateNewAccountScreen = () => {
           />
         </View> */}
 
-        <View style={[styles.termsContainer, {marginTop: getScreenHeight(5)}]}>
+        <View style={[styles.termsContainer, { marginTop: getScreenHeight(5) }]}>
           <Typography
             text={'Already have an account? '}
             variant={TypographyVariant.LMEDIUM_REGULAR}
@@ -406,7 +413,7 @@ const CreateNewAccountScreen = () => {
             text={'Login Here'}
             onPress={handleLoginButton}
             variant={TypographyVariant.PMEDIUM_SEMIBOLD}
-            customTextStyles={[styles.linkText, {paddingVertical: 0.5}]}
+            customTextStyles={[styles.linkText, { paddingVertical: 0.5 }]}
           />
         </View>
 

@@ -28,11 +28,9 @@ import {
 } from '../../../components/MainComponents/Button';
 import BasicSkeleton from '../../../components/MainComponents/Skeleton/BasicSkeleton';
 import { API_ENDPOINTS, BASE_URL } from '../../../config/ApiConfig';
-import ColorPalette from '../../../config/ColorPalette';
-import { getScreenHeight, getScreenWidth } from '../../../helpers/screenSize';
-import { addToCart } from '../../../services/CartService';
 import {
   addToWishlist,
+  getWishlist,
   removeFromWishlist,
 } from '../../../services/WishlistService';
 import { goBack, navigate } from '../../../utils/navigationref';
@@ -55,6 +53,8 @@ import CloseIcon from '../../../assets/icons/CloseIcon';
 import { ToastMessages } from '../../../components/MainComponents/Toast/ToastMessages';
 import { showToast } from '../../../components/MainComponents/Toast/ToastHelper';
 import { CartIcon } from '../../../assets/icons/BottomNavIcons';
+import ColorPalette from '../../../config/ColorPalette';
+import { getScreenHeight, getScreenWidth } from '../../../helpers/screenSize';
 
 const MemoizedMenuItem = React.memo(MenuItem);
 
@@ -243,24 +243,6 @@ const SearchResultScreen = ({ route }: any) => {
 
   const userId = useSelector((state: RootState) => state.auth.userId);
 
-  const syncWishlist = useCallback(async () => {
-    if (!userId) return;
-    try {
-      const response = await axios.get(API_ENDPOINTS.WISHLIST(userId));
-      const fetchedProducts = response.data.products || [];
-      const favs: Record<string, boolean> = {};
-      const cartIds: Record<string, string> = {};
-      fetchedProducts.forEach((p: any) => {
-        favs[p.product_id] = true;
-        cartIds[p.product_id] = p.wishlist_id || p.item_id;
-      });
-      setFavorites(favs);
-      setProductCartIds(cartIds);
-    } catch (error) {
-      console.error('Error syncing wishlist:', error);
-    }
-  }, [userId]);
-
   useEffect(() => {
     const fetchNtFilters = async () => {
       try {
@@ -407,90 +389,100 @@ const SearchResultScreen = ({ route }: any) => {
       setHasSubmittedSearch(true);
       setPage(1);
       setProducts([]);
-      // Optionally: if suggestion has product_id, we could navigate directly
-      // but the request implies "search" behavior
     },
     [dispatch],
   );
 
+  const syncWishlist = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const result = await getWishlist(userId);
+      if (result.success) {
+        const favs: Record<string, boolean> = {};
+        const cartIds: Record<string, string> = {};
+        result.products.forEach((p: any) => {
+          favs[p.product_id] = true;
+          cartIds[p.product_id] = p.wishlist_id || p.item_id;
+        });
+        setFavorites(favs);
+        setProductCartIds(cartIds);
+      }
+    } catch (error) {
+      console.error('Error syncing search wishlist:', error);
+    }
+  }, [userId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      syncWishlist();
+    }, [syncWishlist]),
+  );
+
+
   const toggleFavorite = useCallback(
     async (productId: string) => {
+      if (!userId) {
+        showToast(ToastMessages.CommonToastMessages.loginToAddWishlist, 'error');
+        return;
+      }
+
       const isAdding = !favorites[productId];
+      const previousState = favorites[productId];
 
       setFavorites((prev: any) => ({
         ...prev,
         [productId]: isAdding,
       }));
 
-      if (isAdding) {
-        if (!userId) {
-          if (Platform.OS === 'android') {
-            showToast(
-              ToastMessages.CommonToastMessages.loginToAddWishlist,
-              'error',
-            );
+      try {
+        if (isAdding) {
+          const result = await addToWishlist(userId, productId);
+          if (result && (result.success || result.result)) {
+            showToast(ToastMessages.ProductDetailScreen.wishlistAdded, 'success');
+            syncWishlist();
           } else {
             showToast(
-              ToastMessages.CommonToastMessages.loginToAddWishlist,
-              'error',
-            );
-          }
-          setFavorites((prev: any) => ({
-            ...prev,
-            [productId]: false,
-          }));
-          return;
-        }
-        const result = await addToWishlist(userId, productId);
-        if (result.success) {
-          syncWishlist();
-        } else {
-          if (Platform.OS === 'android') {
-            showToast(
-              ToastMessages.CommonToastMessages.addToWishlistFailed(
-                result.message,
+              ToastMessages.ProductDetailScreen.wishlistFailed(
+                result?.message || 'Failed to add',
               ),
               'error',
             );
-          } else {
-            showToast(
-              ToastMessages.CommonToastMessages.addToWishlistFailed(
-                result.message,
-              ),
-              'error',
-            );
-          }
-          setFavorites((prev: any) => ({
-            ...prev,
-            [productId]: false,
-          }));
-        }
-      } else {
-        const cartId = productCartIds[productId];
-        if (cartId && userId) {
-          const result = await removeFromWishlist(userId, cartId);
-          if (!result.success) {
-            if (Platform.OS === 'android') {
-              showToast(
-                ToastMessages.CommonToastMessages.removeFromWishlistFailed(
-                  result.message,
-                ),
-                'error',
-              );
-            } else {
-              showToast(
-                ToastMessages.CommonToastMessages.removeFromWishlistFailed(
-                  result.message,
-                ),
-                'error',
-              );
-            }
             setFavorites((prev: any) => ({
               ...prev,
-              [productId]: true,
+              [productId]: false,
             }));
           }
+        } else {
+          const cartId = productCartIds[productId];
+          if (cartId && userId) {
+            const result = await removeFromWishlist(userId, cartId);
+            if (result && (result.success || result.result)) {
+              showToast(
+                ToastMessages.ProductDetailScreen.wishlistRemoved,
+                'error',
+              );
+              syncWishlist();
+            } else {
+              showToast(
+                ToastMessages.ProductDetailScreen.wishlistFailed(
+                  result?.message || 'Failed to remove',
+                ),
+                'error',
+              );
+              setFavorites((prev: any) => ({
+                ...prev,
+                [productId]: true,
+              }));
+            }
+          }
         }
+      } catch (error) {
+        console.error('Toggle favorite error:', error);
+        showToast(ToastMessages.CommonToastMessages.unexpectedError, 'error');
+        setFavorites((prev: any) => ({
+          ...prev,
+          [productId]: previousState,
+        }));
       }
     },
     [userId, favorites, productCartIds, syncWishlist],
@@ -864,7 +856,9 @@ const SearchResultScreen = ({ route }: any) => {
           onSubmitEditing={handleSearchSubmit}
           onMicPress={() => setIsVoiceModalVisible(true)}
         />
-        <CartIcon style={undefined} />
+        <TouchableOpacity onPress={() => navigate('Cart' as never)}>
+          <CartIcon style={undefined} />
+        </TouchableOpacity>
       </View>
 
       {isTyping && (suggestions.length > 0 || isSuggestionsLoading) ? (

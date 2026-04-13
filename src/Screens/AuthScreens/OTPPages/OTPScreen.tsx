@@ -1,40 +1,40 @@
-import React, {useEffect, useState} from 'react';
-import {SafeAreaView, TouchableOpacity, View} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
-import {RootState} from '../../../store';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, TouchableOpacity, View } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
 import ArrowLeftIcon from '../../../assets/icons/ArrowLeft';
 import FlowBite from '../../../assets/icons/FlowBite';
-import {Button} from '../../../components/MainComponents/Button/Button';
+import { Button } from '../../../components/MainComponents/Button/Button';
 import {
   ButtonSize,
   ButtonState,
   ButtonVariant,
 } from '../../../components/MainComponents/Button/Button.types';
-import {OtpInput} from '../../../components/MainComponents/OtpInput/OtpInput';
-import {TextButton} from '../../../components/MainComponents/TextButton/TextButton';
-import {Typography} from '../../../components/MainComponents/Typography/Typography';
-import {TypographyVariant} from '../../../components/MainComponents/Typography/Typography.types';
+import { OtpInput } from '../../../components/MainComponents/OtpInput/OtpInput';
+import { TextButton } from '../../../components/MainComponents/TextButton/TextButton';
+import { Typography } from '../../../components/MainComponents/Typography/Typography';
+import { TypographyVariant } from '../../../components/MainComponents/Typography/Typography.types';
 import ColorPalette from '../../../config/ColorPalette';
-import {globalStyles} from '../../../config/globalStyles';
-import {STATIC_TEXT} from '../../../config/staticText';
-import {goBack} from '../../../utils/navigationref';
-import {styles} from './OTPScreen.styles';
-import {setAuth} from '../../../store/slices/authSlice';
-import {API_ENDPOINTS} from '../../../config/ApiConfig';
-import {syncGuestCart} from '../../../services/CartService';
-import {clearGuestCart} from '../../../store/slices/cartSlice';
+import { globalStyles } from '../../../config/globalStyles';
+import { STATIC_TEXT } from '../../../config/staticText';
+import { goBack } from '../../../utils/navigationref';
+import { styles } from './OTPScreen.styles';
+import { setAuth } from '../../../store/slices/authSlice';
+import { API_ENDPOINTS } from '../../../config/ApiConfig';
+import { syncGuestCart } from '../../../services/CartService';
+import { clearGuestCart } from '../../../store/slices/cartSlice';
 import Toast from 'react-native-toast-message';
-import {showToast} from '../../../components/MainComponents/Toast/ToastHelper';
-import {ToastMessages} from '../../../components/MainComponents/Toast/ToastMessages';
+import { showToast } from '../../../components/MainComponents/Toast/ToastHelper';
+import { ToastMessages } from '../../../components/MainComponents/Toast/ToastMessages';
 
-const {promptTitleWhatsapp, promptTitleEmail, otpSent, resendText, verifyText} =
+const { promptTitleWhatsapp, promptTitleEmail, otpSent, resendText, verifyText } =
   STATIC_TEXT.screens.otpScreen;
 // const OTP_LENGTH = 5;
 const emailScreenType = STATIC_TEXT.screens.screenType.email;
 const whatsAppScreenType = STATIC_TEXT.screens.screenType.whatsApp;
 const createAccountScreenType = STATIC_TEXT.screens.screenType.createAccount;
 
-const OTPScreen = ({route, navigation}: any) => {
+const OTPScreen = ({ route, navigation }: any) => {
   const {
     phoneNumber,
     email,
@@ -54,7 +54,7 @@ const OTPScreen = ({route, navigation}: any) => {
   const OTP_LENGTH = 5;
 
   const dispatch = useDispatch();
-  const {guestCartItems} = useSelector((state: RootState) => state.cart);
+  const { guestCartItems } = useSelector((state: RootState) => state.cart);
 
   useEffect(() => {
     if (secondsLeft === null) return;
@@ -137,12 +137,20 @@ const OTPScreen = ({route, navigation}: any) => {
             );
           }
         } else {
-          const {sendWhatsAppOtp} = require('../../../services/AuthService');
-          console.log('Resending WhatsApp OTP to:', phoneNumber);
+          const { flow } = route.params;
+          const {
+            sendWhatsAppOtp,
+            sendWhatsAppOtpForSignup,
+          } = require('../../../services/AuthService');
+
+          console.log(`Resending WhatsApp OTP (${flow}) to:`, phoneNumber);
 
           showToast(ToastMessages.OTPScreen.resendingOtp, 'loading');
 
-          const response = await sendWhatsAppOtp(phoneNumber);
+          const response =
+            flow === 'signup'
+              ? await sendWhatsAppOtpForSignup(phoneNumber)
+              : await sendWhatsAppOtp(phoneNumber);
 
           if (response.generated_otp) {
             console.log('Resent WhatsApp OTP:', response.generated_otp);
@@ -169,7 +177,7 @@ const OTPScreen = ({route, navigation}: any) => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({email: email}),
+          body: JSON.stringify({ email: email }),
         });
         const data = await response.json();
 
@@ -206,15 +214,15 @@ const OTPScreen = ({route, navigation}: any) => {
       showToast(ToastMessages.OTPScreen.verifyingOtp, 'loading');
       setError('');
 
-      const {flow, userId, returnTo} = route.params;
+      const { flow, userId, returnTo } = route.params;
       console.log('OTPScreen Params:', route.params);
-      console.log('Bypass Check:', {flow, userId});
+      console.log('Bypass Check:', { flow, userId });
 
       // Bypass verification for signup flow if userId is present
       if (flow === 'signup' && userId) {
         navigation.navigate('AuthSuccessScreen', {
           screenType,
-          authData: {userId: userId.toString(), email: email || phoneNumber},
+          authData: { userId: userId.toString(), email: email || phoneNumber },
           returnTo,
         });
         setIsLoading(false);
@@ -253,7 +261,7 @@ const OTPScreen = ({route, navigation}: any) => {
           } = require('../../../services/AuthService');
           data = await verifyWhatsAppOtpForSignup(phoneNumber, otp);
         } else {
-          const {verifyWhatsAppOtp} = require('../../../services/AuthService');
+          const { verifyWhatsAppOtp } = require('../../../services/AuthService');
           data = await verifyWhatsAppOtp(phoneNumber, otp);
         }
 
@@ -269,7 +277,12 @@ const OTPScreen = ({route, navigation}: any) => {
           }
         }
 
-        isSuccess = data?.result === true || data?.result === 'true';
+        if (flow === 'signup' || flow === 'profile_update') {
+          isSuccess = data?.result === true || data?.result === 'true';
+        } else {
+          // Explicitly require user_id for login, as invalid OTPs might return result: true with message: "not_found"
+          isSuccess = (data?.result === true || data?.result === 'true') && data?.message !== 'not_found' && !!(data?.user_id || data?.userId);
+        }
       } else {
         const response = await fetch(API_ENDPOINTS.VERIFY_OTP, {
           method: 'POST',
@@ -283,7 +296,7 @@ const OTPScreen = ({route, navigation}: any) => {
         });
         data = await response.json();
         isSuccess =
-          response.ok && (data.result === true || data.result === 'true');
+          response.ok && (data.result === true || data.result === 'true') && data?.message !== 'not_found' && !!(data?.user_id || data?.userId);
         console.log('Verify Email OTP Response (Legacy):', data);
       }
 
@@ -299,7 +312,7 @@ const OTPScreen = ({route, navigation}: any) => {
             email: signupEmail,
             countryCode,
           } = route.params;
-          const {createAccountV2} = require('../../../services/AuthService');
+          const { createAccountV2 } = require('../../../services/AuthService');
 
           // Ensure phone number format is correct (it might be passed as consolidated or separate)
           // In handleCreateNewAccount we passed `fullPhoneNumber` as `phoneNumber`
@@ -314,8 +327,8 @@ const OTPScreen = ({route, navigation}: any) => {
             email: signupEmail,
             phone: targetPhone,
             ...(verificationMethod === 'email'
-              ? {nt_email_verify: 'Y'}
-              : {phone_verified: 'Y'}),
+              ? { nt_email_verify: 'Y' }
+              : { phone_verified: 'Y' }),
           };
 
           console.log('Hitting Create Account API with data:', signupData);
@@ -328,14 +341,16 @@ const OTPScreen = ({route, navigation}: any) => {
             const newUserId = signupResponse.user_id;
             navigation.navigate('AuthSuccessScreen', {
               screenType,
-              authData: {userId: newUserId.toString(), email: signupEmail},
+              authData: { userId: newUserId.toString(), email: signupEmail },
               returnTo,
             });
           } else {
             const errorMessage =
-              signupResponse.message === 'otp_not_verified'
-                ? 'OTP is incorrect'
-                : signupResponse.message || 'Failed to create account.';
+              signupResponse.message === 'not_found'
+                ? 'Account not found'
+                : signupResponse.message === 'otp_not_verified'
+                  ? 'OTP is incorrect'
+                  : signupResponse.message || 'Failed to create account.';
             setError(errorMessage);
             showToast(errorMessage, 'error');
           }
@@ -346,15 +361,15 @@ const OTPScreen = ({route, navigation}: any) => {
         showToast(ToastMessages.OTPScreen.otpVerified);
 
         if (flow === 'profile_update') {
-          const {returnData, returnScreen} = route.params as any;
+          const { returnData, returnScreen } = route.params as any;
           navigation.reset({
             index: 1,
             routes: [
-              {name: 'AccountScreen'},
+              { name: 'AccountScreen' },
               {
                 name: returnScreen,
                 params: {
-                  returnData: {...returnData, otpVerified: true},
+                  returnData: { ...returnData, otpVerified: true },
                   otpVerified: true,
                 },
               },
@@ -375,9 +390,11 @@ const OTPScreen = ({route, navigation}: any) => {
         return;
       } else {
         const errorMessage =
-          data?.message === 'otp_not_verified'
-            ? 'OTP is incorrect'
-            : data?.message || 'Invalid OTP';
+          data?.message === 'not_found'
+            ? 'Account not found'
+            : data?.message === 'otp_not_verified'
+              ? 'OTP is incorrect'
+              : data?.message || 'Invalid OTP';
         setError(errorMessage);
         showToast(errorMessage, 'error');
       }
@@ -397,8 +414,8 @@ const OTPScreen = ({route, navigation}: any) => {
         const data = await response.json();
         console.log('Verify OTP Response:', data);
 
-        if (response.ok && data.result) {
-          const userId = data.user_id;
+        if (response.ok && (data.result === true || data.result === 'true') && data?.message !== 'not_found' && !!(data?.user_id || data?.userId)) {
+          const userId = data.user_id || data.userId;
 
           // Perform guest cart sync in the middle process
           if (userId && guestCartItems.length > 0) {
@@ -431,12 +448,12 @@ const OTPScreen = ({route, navigation}: any) => {
             showToast(ToastMessages.OTPScreen.otpVerified);
             navigation.navigate('AuthSuccessScreen', {
               screenType,
-              authData: {userId: userId.toString(), email: email},
+              authData: { userId: userId.toString(), email: email },
               returnTo,
             });
           } else if (flow === 'update' || flow === 'profile_update') {
-            dispatch(setAuth({userId: userId.toString(), email: email}));
-            const {returnData, returnScreen} = route.params;
+            dispatch(setAuth({ userId: userId.toString(), email: email }));
+            const { returnData, returnScreen } = route.params;
             navigation.replace('MainScreens', {
               screen: 'Account',
               params: {
@@ -450,12 +467,18 @@ const OTPScreen = ({route, navigation}: any) => {
           } else {
             navigation.navigate('AuthSuccessScreen', {
               screenType,
-              authData: {userId: userId.toString(), email: email},
+              authData: { userId: userId.toString(), email: email },
               returnTo,
             });
           }
         } else {
-          setError(data.message || 'Invalid OTP. Please try again.');
+          setError(
+            data?.message === 'not_found'
+              ? 'Account not found'
+              : data?.message === 'otp_not_verified'
+                ? 'OTP is incorrect'
+                : data?.message || 'Invalid OTP. Please try again.',
+          );
         }
         return;
       }
@@ -471,7 +494,7 @@ const OTPScreen = ({route, navigation}: any) => {
     <SafeAreaView style={[globalStyles.secondaryContainer, styles.container]}>
       <TouchableOpacity
         style={styles.bannerContainer}
-        onPress={() => console.log('Back pressed')}>
+        onPress={goBack}>
         <ArrowLeftIcon
           size={22}
           color={ColorPalette.TEXT_GREY_400 as string}
@@ -502,15 +525,15 @@ const OTPScreen = ({route, navigation}: any) => {
                 customTextStyles={styles.subCaptionTwo}
               />
             </View>
-            <TouchableOpacity style={styles.iconContainer} onPress={goBack}>
+            <View style={styles.iconContainer}>
               <FlowBite
                 size={20}
                 color={ColorPalette.TEXT_GREY_400 as string}
                 strokeWidth={2}
                 style={undefined}
-                onPress={undefined}
+                onPress={goBack}
               />
-            </TouchableOpacity>
+            </View>
           </View>
         </View>
         <View style={styles.mainTwoContainer}>
@@ -544,7 +567,7 @@ const OTPScreen = ({route, navigation}: any) => {
                 variant={TypographyVariant.LSMALL_REGULAR}
                 customTextStyles={[
                   styles.linkText,
-                  !canResend && {opacity: 0.5},
+                  !canResend && { opacity: 0.5 },
                 ]}
               />
             </View>

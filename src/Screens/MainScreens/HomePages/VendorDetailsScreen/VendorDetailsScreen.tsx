@@ -25,6 +25,14 @@ import { addItemToCart } from '../../../../store/slices/cartSlice';
 import ScreenWrapper from '../../../../components/CustomComponents/ScreenWrapper/ScreenWrapper';
 import FilterBadges from '../../../../components/CustomComponents/FilterComponent/FilterBadges';
 import {
+  addToWishlist,
+  getWishlist,
+  removeFromWishlist,
+} from '../../../../services/WishlistService';
+import { useFocusEffect } from '@react-navigation/native';
+import { showToast } from '../../../../components/MainComponents/Toast/ToastHelper';
+import { ToastMessages } from '../../../../components/MainComponents/Toast/ToastMessages';
+import {
   Button,
   ButtonSize,
   ButtonType,
@@ -55,12 +63,109 @@ const VendorDetailsScreen: React.FC<VendorDetailsScreenProps> = ({ route }) => {
   );
   const itemsPerPage = 20;
   const [page, setPage] = useState(1);
+  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+  const [productCartIds, setProductCartIds] = useState<Record<string, string>>({});
 
   const userId = useSelector((state: RootState) => state.auth.userId);
   const decodeHTMLEntities = (text: string) => {
     if (!text) return '';
     return text.replace(/&amp;/g, '&');
   };
+
+  const syncWishlist = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const result = await getWishlist(userId);
+      if (result.success) {
+        const favs: Record<string, boolean> = {};
+        const cartIds: Record<string, string> = {};
+        result.products.forEach((p: any) => {
+          favs[p.product_id] = true;
+          cartIds[p.product_id] = p.wishlist_id || p.item_id;
+        });
+        setFavorites(favs);
+        setProductCartIds(cartIds);
+      }
+    } catch (error) {
+      console.error('Error syncing wishlist:', error);
+    }
+  }, [userId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      syncWishlist();
+    }, [syncWishlist]),
+  );
+
+  const toggleFavorite = useCallback(
+    async (productId: string) => {
+      if (!userId) {
+        showToast(ToastMessages.CommonToastMessages.loginToAddWishlist, 'error');
+        return;
+      }
+
+      const isAdding = !favorites[productId];
+      const previousState = favorites[productId];
+
+      setFavorites((prev: any) => ({
+        ...prev,
+        [productId]: isAdding,
+      }));
+
+      try {
+        if (isAdding) {
+          const result = await addToWishlist(userId, productId);
+          if (result && result.success) {
+            showToast(ToastMessages.ProductDetailScreen.wishlistAdded, 'success');
+            syncWishlist();
+          } else {
+            showToast(
+              ToastMessages.ProductDetailScreen.wishlistFailed(
+                result?.message || 'Failed to add',
+              ),
+              'error',
+            );
+            setFavorites((prev: any) => ({
+              ...prev,
+              [productId]: false,
+            }));
+          }
+        } else {
+          const cartId = productCartIds[productId];
+          if (cartId && userId) {
+            const result = await removeFromWishlist(userId, cartId);
+            if (result && result.success) {
+              showToast(
+                ToastMessages.ProductDetailScreen.wishlistRemoved,
+                'error',
+              );
+              syncWishlist();
+            } else {
+              showToast(
+                ToastMessages.ProductDetailScreen.wishlistFailed(
+                  result?.message || 'Failed to remove',
+                ),
+                'error',
+              );
+              setFavorites((prev: any) => ({
+                ...prev,
+                [productId]: true,
+              }));
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Toggle favorite error:', error);
+        showToast(ToastMessages.CommonToastMessages.unexpectedError, 'error');
+        setFavorites((prev: any) => ({
+          ...prev,
+          [productId]: previousState,
+        }));
+      }
+    },
+    [userId, favorites, productCartIds, syncWishlist],
+  );
+
 
   useEffect(() => {
     const fetchVendorDetails = async () => {
@@ -413,8 +518,8 @@ const VendorDetailsScreen: React.FC<VendorDetailsScreenProps> = ({ route }) => {
                       rating={item.rating}
                       reviewCount={item.reviewCount}
                       // deliveryInfo={item.deliveryInfo}
-                      isFavorite={false}
-                      onToggleFavorite={() => { }}
+                      isFavorite={favorites[item.id]}
+                      onToggleFavorite={() => toggleFavorite(item.id)}
                       onAddToCart={() => {
                         if (userId) {
                           dispatch(

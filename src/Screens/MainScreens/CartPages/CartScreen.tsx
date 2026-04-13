@@ -48,10 +48,11 @@ import {
   setError,
   removeGuestItem,
   updateGuestQuantity,
-  fetchCart,
   updateCartQuantityThunk,
   removeItemFromCart,
   clearCart,
+  restoreSavedCart,
+  endBuyNowSession,
 } from '../../../store/slices/cartSlice';
 import { Alert } from 'react-native';
 import ScreenWrapper from '../../../components/CustomComponents/ScreenWrapper/ScreenWrapper';
@@ -90,6 +91,9 @@ const CartScreen = () => {
   const [selectedShippingMethod, setSelectedShippingMethod] =
     useState<any>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<any>(null);
+  const isBuyNowSession = useSelector(
+    (state: RootState) => state.cart.isBuyNowSession,
+  );
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -126,17 +130,13 @@ const CartScreen = () => {
         setBuyNowProduct(null);
       }
 
-      // Reset parameters to avoid re-triggering
-      navigation.setParams({
-        initialStep: undefined,
-        isBuyNow: undefined,
-        buyNowProduct: undefined,
-      });
+      // DO NOT clear params immediately if they are needed for guards in other effects
+      // We will clear them in a separate cleanup or just let them be for this visit
     }
-  }, [route.params, navigation]);
+  }, [route.params?.initialStep, route.params?.isBuyNow, route.params?.buyNowProduct]);
 
-  // Combined reset function for consistency
-  const resetCheckoutState = useCallback(() => {
+  // Combined reset function for consistency (UI ONLY)
+  const resetCheckoutUI = useCallback(() => {
     setCheckoutData(null);
     setSelectedShippingMethod(null);
     setSelectedPaymentMethod(null);
@@ -144,6 +144,13 @@ const CartScreen = () => {
     setCouponCode('');
     setApiNotifications([]);
   }, []);
+
+  // Dedicated restoration helper
+  const performCartRestoration = useCallback(async () => {
+    if (isBuyNowSession && userId) {
+      await dispatch(restoreSavedCart(userId));
+    }
+  }, [isBuyNowSession, userId, dispatch]);
 
   const displayItems = React.useMemo(() => {
     return isBuyNowMode
@@ -357,7 +364,15 @@ const CartScreen = () => {
         setIsFetchingCheckout(false);
       }
     },
-    [userId, selectedShippingMethod, selectedPaymentMethod],
+    [
+      userId,
+      selectedShippingMethod,
+      selectedPaymentMethod,
+      isBuyNowMode,
+      buyNowProduct,
+      couponCode,
+      displaySubtotal,
+    ],
   );
 
   // Reset to Step 1 on focus if not in Buy Now mode and no initialStep was just provided
@@ -365,11 +380,19 @@ const CartScreen = () => {
     useCallback(() => {
       fetchCartData();
 
-      // Only reset if we are deep in the flow AND it's a fresh focus.
-      if (!route.params?.initialStep && !isBuyNowMode) {
+      const arrivingViaBuyNow = !!route.params?.isBuyNow;
+
+      // If we are arriving "normally" (no Buy Now params) but there's an active session in Redux,
+      // it means we are cleaning up from a previous abandoned Buy Now flow.
+      if (!arrivingViaBuyNow && !isBuyNowMode && isBuyNowSession && userId) {
+        performCartRestoration();
+      }
+
+      // Standard UI reset
+      if (!arrivingViaBuyNow && !isBuyNowMode) {
         setCurrentStep(prev => {
           if (prev > 1) {
-            resetCheckoutState();
+            resetCheckoutUI();
             return 1;
           }
           return prev;
@@ -377,25 +400,31 @@ const CartScreen = () => {
       }
     }, [
       fetchCartData,
-      route.params?.initialStep,
+      route.params?.isBuyNow,
       isBuyNowMode,
-      resetCheckoutState,
+      isBuyNowSession,
+      userId,
+      resetCheckoutUI,
+      performCartRestoration,
     ]),
   );
 
   // Also reset to Step 1 if the cart items change (e.g. added a new product from Home)
   React.useEffect(() => {
-    if (!isBuyNowMode) {
-      if (currentStep > 1) {
-        setCurrentStep(1);
-      }
-      resetCheckoutState();
+    // GUARD: If we are currently in or entering Buy Now mode, don't trigger generic reset.
+    // This prevents the race condition during the "Clear -> Add -> Navigate" orchestration.
+    if (isBuyNowMode || route.params?.isBuyNow) return;
+
+    if (currentStep > 1) {
+      setCurrentStep(1);
     }
+    resetCheckoutUI();
   }, [
     cartItems.length,
     guestCartItems.length,
     isBuyNowMode,
-    resetCheckoutState,
+    route.params?.isBuyNow,
+    resetCheckoutUI,
   ]);
 
   // Fetch checkout data when entering appropriate steps or when required
@@ -640,7 +669,16 @@ const CartScreen = () => {
               (n.type === 'W' && n.message.toLowerCase().includes('coupon')),
           );
 
+          const isCouponActive =
+            data?.cart?.coupons &&
+            Object.keys(data.cart.coupons).length > 0 &&
+            Object.keys(data.cart.coupons).some(
+              (c: string) => c.toLowerCase() === code.toLowerCase(),
+            );
+
           console.log('Coupon Error Found:', !!couponError);
+          console.log('Is Coupon Active:', !!isCouponActive);
+
           console.log('Discount Comparison:', {
             disc,
             sub,
@@ -661,6 +699,10 @@ const CartScreen = () => {
           } else if (data.result === false && data.message) {
             setCouponCode('');
             Alert.alert('Coupon Error', data.message);
+          } else if (!isCouponActive) {
+            setCouponCode('');
+            // Silently rejected by the backend or invalid code
+            Alert.alert('Invalid Coupon', 'The promo code entered is invalid or cannot be applied to these items.');
           } else {
             Alert.alert('Success', 'Coupon applied successfully!');
           }
@@ -723,7 +765,7 @@ const CartScreen = () => {
         setLoadingProductId(null);
       }
     },
-    [userId, dispatch, fetchCheckoutData],
+    [userId, dispatch, fetchCheckoutData, loadingProductId],
   );
 
   const handleUpdateQuantity = useCallback(
@@ -767,7 +809,7 @@ const CartScreen = () => {
         setLoadingProductId(null);
       }
     },
-    [userId, dispatch, fetchCheckoutData, handleRemoveItem],
+    [userId, dispatch, fetchCheckoutData, handleRemoveItem, loadingProductId],
   );
 
   const handleIncrement = useCallback(
@@ -912,6 +954,7 @@ const CartScreen = () => {
               width: getScreenWidth(38),
               marginBottom: getScreenHeight(1),
             }}
+            onPress={() => navigation.navigate('Home')}
           />
         </View>
       ) : (
@@ -1045,7 +1088,11 @@ const CartScreen = () => {
           setFailUrl(null);
           setSuccessUrl(null);
           Alert.alert('Transaction Cancelled', 'Transaction Cancelled by User');
-          fetchCartData();
+          if (isBuyNowSession && userId) {
+            performCartRestoration();
+          } else {
+            fetchCartData();
+          }
         }}
         onFail={() => {
           setIsPaymentVisible(false);
@@ -1054,7 +1101,11 @@ const CartScreen = () => {
           setFailUrl(null);
           setSuccessUrl(null);
           Alert.alert('Transaction Failed', 'Transaction Failed');
-          fetchCartData();
+          if (isBuyNowSession && userId) {
+            performCartRestoration();
+          } else {
+            fetchCartData();
+          }
         }}
         onSuccess={() => {
           setIsPaymentVisible(false);
@@ -1077,6 +1128,10 @@ const CartScreen = () => {
           setCouponCode('');
           setApiNotifications([]);
 
+          if (isBuyNowSession && userId) {
+            performCartRestoration();
+          }
+
           // Navigate to confirm order
           navigation.navigate('ConfirmOrder', {
             orderData: { order_id: lastOrderId },
@@ -1090,7 +1145,11 @@ const CartScreen = () => {
           setFailUrl(null);
           setSuccessUrl(null);
           // Refresh cart from server to see if the order was actually placed or cancelled
-          fetchCartData();
+          if (isBuyNowSession && userId) {
+            performCartRestoration();
+          } else {
+            fetchCartData();
+          }
           // We stay on the current step (Summary) so the user can see their items if payment failed
         }}
       />

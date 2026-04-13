@@ -59,6 +59,10 @@ import {
   addItemToCart,
   addGuestItem,
   removeItemFromCart,
+  fetchCart,
+  startBuyNowSession,
+  restoreSavedCart,
+  clearCart,
 } from '../../store/slices/cartSlice';
 import {
   fetchWishlist,
@@ -69,6 +73,7 @@ import {
   getWishlist,
   removeFromWishlist,
 } from '../../services/WishlistService';
+import { clearCart as clearCartService } from '../../services/CartService';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
@@ -117,6 +122,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
   const [isReviewModalVisible, setIsReviewModalVisible] = useState(false);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [isVoiceModalVisible, setIsVoiceModalVisible] = React.useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -133,20 +139,32 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
   }, [userId, dispatch]);
 
   const handleNavigateToSearchResult = useCallback(
-    (searchQuery = '') => {
-      if (searchQuery.trim()) {
+    (searchQuery = '', nt_see_more_action = '') => {
+      // If we have an action, we prioritize it over the search text for history
+      if (searchQuery.trim() && !nt_see_more_action) {
         dispatch(addSearch(searchQuery));
       }
       navigate('MainScreens', {
         screen: 'Search',
         params: {
           screen: 'SearchResultScreen',
-          params: { searchQuery },
+          params: { searchQuery, nt_see_more_action },
         },
       });
     },
     [dispatch],
   );
+
+  // Sync favorites state with Redux wishlist items
+  useEffect(() => {
+    const favMap: Record<string, boolean> = {};
+    wishlistItems.forEach((item: any) => {
+      if (item.product_id) {
+        favMap[String(item.product_id)] = true;
+      }
+    });
+    setFavorites(favMap);
+  }, [wishlistItems]);
 
   const fetchProductDetails = useCallback(async () => {
     if (!productId) return;
@@ -189,84 +207,76 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
 
   useEffect(() => {
     fetchProductDetails();
-  }, [fetchProductDetails]);
+    if (userId) {
+      dispatch(fetchCart(userId) as any);
+    }
+  }, [fetchProductDetails, userId, dispatch]);
 
   const toggleFavorite = useCallback(
     async (id: string) => {
+      const isMainProduct = String(id) === String(productId);
       const isAdding = !favorites[id];
 
-      // Optimistic update
-      setFavorites(prev => ({
-        ...prev,
-        [id]: isAdding,
-      }));
+      if (isMainProduct) setIsWishlistLoading(true);
 
-      if (isAdding) {
-        if (!userId) {
-          if (Platform.OS === 'android') {
+      try {
+        if (isAdding) {
+          if (!userId) {
             showToast(
               ToastMessages.CommonToastMessages.loginToAddWishlist,
               'error',
             );
+            if (isMainProduct) setIsWishlistLoading(false);
+            return;
+          }
+          const result = await addToWishlist(userId, id);
+          if (result && (result.success || result.result)) {
+            showToast(ToastMessages.ProductDetailScreen.wishlistAdded, 'success');
+            syncWishlist();
           } else {
             showToast(
-              ToastMessages.CommonToastMessages.loginToAddWishlist,
+              ToastMessages.ProductDetailScreen.wishlistFailed(
+                result?.message || 'Failed to add',
+              ),
               'error',
             );
           }
-          setFavorites(prev => ({
-            ...prev,
-            [id]: false,
-          }));
-          return;
-        }
-        const result = await addToWishlist(userId, id);
-        if (result.success) {
-          syncWishlist();
         } else {
-          if (Platform.OS === 'android') {
+          if (!userId) return;
+
+          // Find the correct cart_id/item_id for removal
+          const wishlistEntry = wishlistItems.find(
+            (item: any) => String(item.product_id) === String(id),
+          );
+          const cartId =
+            wishlistEntry?.wishlist_id || wishlistEntry?.item_id || id;
+
+          console.log('Removing from wishlist. ProductID:', id, 'CartID:', cartId);
+
+          const result = await removeFromWishlist(userId, cartId);
+          if (result && (result.success || result.result)) {
             showToast(
-              ToastMessages.ProductDetailScreen.wishlistFailed(result.message),
+              ToastMessages.ProductDetailScreen.wishlistRemoved,
               'error',
             );
+            syncWishlist();
           } else {
             showToast(
-              ToastMessages.ProductDetailScreen.wishlistFailed(result.message),
+              ToastMessages.ProductDetailScreen.wishlistFailed(
+                result?.message || 'Failed to remove',
+              ),
               'error',
             );
           }
-          setFavorites(prev => ({
-            ...prev,
-            [id]: false,
-          }));
         }
-      } else {
-        if (!userId) return;
-        const result = await removeFromWishlist(userId, id);
-        if (result.success) {
-          syncWishlist();
-        } else {
-          if (Platform.OS === 'android') {
-            showToast(
-              ToastMessages.ProductDetailScreen.wishlistFailed(result.message),
-              'error',
-            );
-          } else {
-            showToast(
-              ToastMessages.ProductDetailScreen.wishlistFailed(result.message),
-              'error',
-            );
-          }
-          setFavorites(prev => ({
-            ...prev,
-            [id]: true,
-          }));
-        }
-        return;
+      } catch (error) {
+        console.error('Toggle favorite error:', error);
+        showToast(ToastMessages.CommonToastMessages.unexpectedError, 'error');
+      } finally {
+        if (isMainProduct) setIsWishlistLoading(false);
       }
-      dispatch(toggleWishlistItem({ userId, productId: id }) as any);
     },
-    [userId, dispatch],
+    [userId, dispatch, productId, favorites, syncWishlist],
   );
 
   const handleCardPress = (id: string) => {
@@ -452,29 +462,105 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
     [userId, productData, dispatch],
   );
 
-  const handleBuyNow = useCallback(() => {
+  const cartItems = useSelector((state: RootState) => state.cart.cartItems);
+
+  const handleBuyNow = useCallback(async () => {
     if (!product || !productId) return;
 
-    const buyNowProduct = {
-      product_id: String(productId),
-      product: product.product,
-      amount: 1,
-      price: product.price,
-      display_price:
-        product.display_price || `${currency?.symbol || '€'}${product.price}`,
-      main_pair: product.main_pair,
-      item_id: `buynow_${productId}`, // Virtual ID to distinguish
-    };
+    if (!userId) {
+      // Guest users: we just swap locally in CartScreen anyway,
+      // but let's follow a similar path for consistency if needed.
+      // For now, standard guest Buy Now is okay as it's locally managed.
+      const buyNowProduct = {
+        product_id: String(productId),
+        product: product.product,
+        amount: 1,
+        price: product.price,
+        display_price:
+          product.display_price || `${currency?.symbol || '€'}${product.price}`,
+        main_pair: product.main_pair,
+        item_id: `buynow_${productId}`,
+      };
 
-    navigation.navigate('Cart', {
-      screen: 'CartScreen',
-      params: {
-        initialStep: 1,
-        isBuyNow: true,
-        buyNowProduct: buyNowProduct,
-      },
-    });
-  }, [productId, product, currency, navigation]);
+      navigation.navigate('Cart', {
+        screen: 'CartScreen',
+        params: {
+          initialStep: 1,
+          isBuyNow: true,
+          buyNowProduct: buyNowProduct,
+        },
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      // 1. Save current cart items to Redux for restoration later
+      dispatch(startBuyNowSession(cartItems));
+
+      // 2. Clear server-side cart to isolate this purchase
+      const clearResult = await clearCartService(userId);
+      if (!clearResult.success) {
+        throw new Error('Failed to prepare cart for Buy Now');
+      }
+
+      // HEAL: Clear local Redux state immediately so addItemToCart payload is clean
+      dispatch(clearCart());
+
+      // 3. Add the Buy Now product to the server-side cart
+      const addResult = await dispatch(
+        addItemToCart({
+          userId: userId,
+          productId: productId,
+          productDetails: {
+            title: product.product,
+            price: String(product.price || '0'),
+            display_price:
+              product.display_price ||
+              `${currency?.symbol || '€'}${product.price}`,
+            image: product.main_pair?.detailed?.image_path || '',
+          },
+        }) as any,
+      ).unwrap();
+
+      const buyNowProduct = {
+        product_id: String(productId),
+        product: product.product,
+        amount: 1,
+        price: product.price,
+        display_price:
+          product.display_price || `${currency?.symbol || '€'}${product.price}`,
+        main_pair: product.main_pair,
+        item_id: addResult?.item_id || `buynow_${productId}`,
+      };
+
+      // 4. Navigate to Cart screen
+      navigation.navigate('Cart', {
+        screen: 'CartScreen',
+        params: {
+          initialStep: 1,
+          isBuyNow: true,
+          buyNowProduct: buyNowProduct,
+        },
+      });
+    } catch (error: any) {
+      console.error('Buy Now flow error:', error);
+      showToast('Failed to initiate Buy Now. Restoring your cart...', 'error');
+      // On error, try to restore the original cart immediately
+      await dispatch(restoreSavedCart(userId) as any);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    productId,
+    product,
+    currency,
+    navigation,
+    userId,
+    dispatch,
+    cartItems,
+  ]);
 
   const handleReviewSubmit = async (rating_value: number, comment: string) => {
     if (!userId) {
@@ -761,7 +847,10 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
             />
           </View>
         </TouchableOpacity>
-        <ShoppingBagIcon2 />
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Cart', { screen: 'CartScreen' })}>
+          <ShoppingBagIcon2 />
+        </TouchableOpacity>
       </View>
       <ScrollView
         style={styles.mainContainer}
@@ -809,6 +898,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
             onAddToWishlist={() => toggleFavorite(productId)}
             onShare={handleShare}
             isFavorite={isProductFavorite}
+            loading={isWishlistLoading}
           />
 
           {product3DModelUrl && (
@@ -981,7 +1071,23 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
             text="See All Products"
             IconComponent={ChevronIcon}
             iconPosition="right"
-            onPress={() => { }}
+            onPress={() => {
+              if (productData?.product?.main_category) {
+                navigate('MainScreens', {
+                  screen: 'Search',
+                  params: {
+                    screen: 'SearchResultScreen',
+                    params: { category_id: productData.product.main_category },
+                  },
+                } as any);
+              } else {
+                const block = products_block?.[0];
+                handleNavigateToSearchResult(
+                  block?.title || '',
+                  block?.see_more_action || block?.nt_see_more_action || '',
+                );
+              }
+            }}
             state={ButtonState.DEFAULT}
             size={ButtonSize.SEMILARGE}
             type={ButtonType.PRIMARY}
@@ -1011,42 +1117,28 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
 
       {/* Fixed Bottom Action Bar */}
       <View style={styles.actionButtonsContainer}>
-        {isAdded ? (
-          <View
-            style={[
-              styles.actionButton,
-              {
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: 20,
-                backgroundColor: ColorPalette.WHITE,
-                borderColor: ColorPalette.ROSE_PURPLE_400,
-                borderWidth: 1.5,
-                borderRadius: Spacing.Small,
-                height: 58,
-              },
-            ]}>
-            <TouchableOpacity onPress={() => handleDecrement()}>
-              <Typography
-                text="-"
-                variant={TypographyVariant.H4_BOLD}
-                customTextStyles={{ color: ColorPalette.ROSE_PURPLE_400 }}
-              />
-            </TouchableOpacity>
-            <Typography
-              text={String(currentQuantity)}
-              variant={TypographyVariant.H6_BOLD}
-              customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
-            />
-            <TouchableOpacity onPress={() => handleIncrement()}>
-              <Typography
-                text="+"
-                variant={TypographyVariant.H4_BOLD}
-                customTextStyles={{ color: ColorPalette.ROSE_PURPLE_400 }}
-              />
-            </TouchableOpacity>
-          </View>
+        {currentQuantity > 0 ? (
+          <Button
+            text="Cart Added"
+            leftIcon={CartIcon} /* Checkmark might be better but reusing CartIcon */
+            onPress={() => navigation.navigate('Cart', { screen: 'CartScreen' })}
+            state={ButtonState.DEFAULT}
+            size={ButtonSize.SEMILARGE}
+            type={ButtonType.PRIMARY}
+            variant={ButtonVariant.PRIMARY}
+            customStyles={{
+              ...styles.actionButton,
+              borderColor: ColorPalette.ROSE_PURPLE_400 as string,
+              borderWidth: 1.5,
+              backgroundColor: ColorPalette.WHITE,
+            }}
+            customTextStyles={{
+              color: ColorPalette.ROSE_PURPLE_400,
+            }}
+            iconSize={18}
+            iconColor={ColorPalette.ROSE_PURPLE_400 as any}
+            withShadow={true}
+          />
         ) : (
           <Button
             text={

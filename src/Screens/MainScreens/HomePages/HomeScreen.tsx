@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
   getCurrentLocation,
   requestLocationPermission,
@@ -59,7 +60,6 @@ import {
   removeFromWishlist,
 } from '../../../services/WishlistService';
 import { Alert, Platform, ToastAndroid } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../store';
 import { setSupportInfo, setPageIds } from '../../../store/slices/appSlice';
@@ -314,11 +314,15 @@ const HomeScreen = () => {
         ] as TabRoute[];
       }
 
-      // Fallback to default tabs with category_id added (only if not loading anymore)
-      return tabRoutes.map(tab => ({
-        ...tab,
-        category_id: tab.key === 'all' ? '' : tab.key,
-      })) as TabRoute[];
+      // Only show the "All" tab if categories are missing or empty to prevent static placeholder tabs
+      return [
+        {
+          key: 'all',
+          title: 'All',
+          icon: require('../../../assets/images/All.png'),
+          category_id: '',
+        },
+      ] as TabRoute[];
     }
 
     // Always start with "All" tab
@@ -633,20 +637,33 @@ const HomeScreen = () => {
     }
   }, []);
 
+  const syncWishlist = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const result = await getWishlist(userId);
+      if (result.success) {
+        const favs: Record<string, string | boolean> = {};
+        result.products.forEach((p: any) => {
+          favs[p.product_id] = p.wishlist_id || p.item_id || true;
+        });
+        setFavorites(favs);
+      }
+    } catch (error) {
+      console.error('Error syncing wishlist:', error);
+    }
+  }, [userId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      syncWishlist();
+    }, [syncWishlist]),
+  );
+
+
   const toggleFavorite = useCallback(
     async (productId: string) => {
       if (!userId) {
-        if (Platform.OS === 'android') {
-          showToast(
-            ToastMessages.CommonToastMessages.loginToAddWishlist,
-            'error',
-          );
-        } else {
-          showToast(
-            ToastMessages.CommonToastMessages.loginToAddWishlist,
-            'error',
-          );
-        }
+        showToast(ToastMessages.CommonToastMessages.loginToAddWishlist, 'error');
         return;
       }
 
@@ -664,85 +681,77 @@ const HomeScreen = () => {
         return next;
       });
 
-      if (isAdding) {
-        const result = await addToWishlist(userId, productId);
-        if (!result.success) {
-          if (Platform.OS === 'android') {
-            showToast(
-              ToastMessages.CommonToastMessages.addToWishlistFailed(
-                result.message,
-              ),
-              'error',
-            );
+      try {
+        if (isAdding) {
+          const result = await addToWishlist(userId, productId);
+          if (result && (result.success || result.result)) {
+            showToast(ToastMessages.ProductDetailScreen.wishlistAdded, 'success');
+            await syncWishlist();
           } else {
             showToast(
-              ToastMessages.CommonToastMessages.addToWishlistFailed(
-                result.message,
+              ToastMessages.ProductDetailScreen.wishlistFailed(
+                result?.message || 'Failed to add',
               ),
               'error',
             );
+            // Rollback on fail
+            setFavorites(prev => ({
+              ...prev,
+              [productId]: previousState,
+            }));
           }
-          // Rollback on fail
-          setFavorites(prev => ({
-            ...prev,
-            [productId]: previousState,
-          }));
         } else {
-          // Success - we don't sync immediately to avoid stale data overwriting the UI
-          // The next full sync (on focus or refresh) will get the correct wishlist_id
-        }
-      } else {
-        // Removal logic
-        // Find the cart_id (wishlist_id) for this product
-        let cartId = typeof previousState === 'string' ? previousState : null;
+          // Removal logic
+          // Find the cart_id (wishlist_id) for this product
+          let cartId = typeof previousState === 'string' ? previousState : null;
 
-        if (!cartId) {
-          // Try to find it in apiData if not in favorites state
-          const allProducts = [
-            ...(apiData.bestSellerProducts || []),
-            ...(apiData.newArrivalProducts || []),
-            ...(apiData.rocketDealProducts || []),
-            ...(apiData.curatedProducts || []),
-          ];
-          const product = allProducts.find(
-            p => String(p.id) === String(productId),
-          );
-          cartId = product?.cart_id;
-        }
+          if (!cartId) {
+            const allProducts = [
+              ...(apiData.bestSellerProducts || []),
+              ...(apiData.newArrivalProducts || []),
+              ...(apiData.rocketDealProducts || []),
+              ...(apiData.curatedProducts || []),
+            ];
+            const product = allProducts.find(
+              p => String(p.id) === String(productId),
+            );
+            cartId = product?.cart_id;
+          }
 
-        if (!cartId) {
-          console.error('Could not find cart_id for removal');
-          // Rollback
-          setFavorites(prev => ({
-            ...prev,
-            [productId]: previousState,
-          }));
-          return;
-        }
+          if (!cartId) {
+            // If still no cartId, we use productId as fallback (services might handle it)
+            cartId = productId;
+          }
 
-        const result = await removeFromWishlist(userId, cartId);
-        if (!result.success) {
-          if (Platform.OS === 'android') {
+          const result = await removeFromWishlist(userId, cartId);
+          if (result && (result.success || result.result)) {
             showToast(
-              ToastMessages.CommonToastMessages.removeFromWishlistFailed(
-                result.message,
-              ),
+              ToastMessages.ProductDetailScreen.wishlistRemoved,
               'error',
             );
+            await syncWishlist();
           } else {
             showToast(
-              ToastMessages.CommonToastMessages.removeFromWishlistFailed(
-                result.message,
+              ToastMessages.ProductDetailScreen.wishlistFailed(
+                result?.message || 'Failed to remove',
               ),
               'error',
             );
+            // Rollback on fail
+            setFavorites(prev => ({
+              ...prev,
+              [productId]: previousState,
+            }));
           }
-          // Rollback on fail
-          setFavorites(prev => ({
-            ...prev,
-            [productId]: previousState,
-          }));
         }
+      } catch (error) {
+        console.error('Toggle favorite error:', error);
+        showToast(ToastMessages.CommonToastMessages.unexpectedError, 'error');
+        // Rollback
+        setFavorites(prev => ({
+          ...prev,
+          [productId]: previousState,
+        }));
       }
     },
     [favorites, userId, apiData],
