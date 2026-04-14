@@ -1,11 +1,11 @@
-import React, {useEffect, useState, useCallback, useRef, memo} from 'react';
-import {View, StyleSheet, InteractionManager} from 'react-native';
+import React, { useEffect, useState, useCallback, useRef, memo } from 'react';
+import { View, StyleSheet, InteractionManager } from 'react-native';
 import MainContent from './MainContent';
-import {transformHomeData} from '../../../helpers/homeDataAdaptor';
+import { transformHomeData } from '../../../helpers/homeDataAdaptor';
 import axios from 'axios';
-import {API_ENDPOINTS} from '../../../config/ApiConfig';
-import {useDispatch} from 'react-redux';
-import {setSupportInfo, setPageIds} from '../../../store/slices/appSlice';
+import { API_ENDPOINTS } from '../../../config/ApiConfig';
+import { useDispatch } from 'react-redux';
+import { setSupportInfo, setPageIds } from '../../../store/slices/appSlice';
 import HomeErrorState from '../../../components/CustomComponents/HomeComponents/HomeErrorState/HomeErrorState';
 
 interface CategoryPageProps {
@@ -136,7 +136,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
           }
         />
       ) : (
-        <View style={{flex: 1, backgroundColor: 'white'}} />
+        <View style={{ flex: 1, backgroundColor: 'white' }} />
       )}
     </View>
   );

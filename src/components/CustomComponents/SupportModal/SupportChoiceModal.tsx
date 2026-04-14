@@ -1,17 +1,17 @@
 import React from 'react';
-import {Modal as RNModal, TouchableOpacity, View, Linking} from 'react-native';
-import Svg, {Path} from 'react-native-svg';
+import { Modal as RNModal, TouchableOpacity, View, Linking } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import CloseIcon from '../../../assets/icons/CloseIcon';
 import ColorPalette from '../../../config/ColorPalette';
-import {Typography} from '../../MainComponents/Typography/Typography';
-import {TypographyVariant} from '../../MainComponents/Typography/Typography.types';
-import {styles} from './SupportChoiceModal.styles';
-import {SupportChoiceModalProps} from './SupportChoiceModal.types';
-import {navigate} from '../../../utils/navigationref';
-import {showToast} from '../../MainComponents/Toast/ToastHelper';
-import {ToastMessages} from '../../MainComponents/Toast/ToastMessages';
+import { Typography } from '../../MainComponents/Typography/Typography';
+import { TypographyVariant } from '../../MainComponents/Typography/Typography.types';
+import { styles } from './SupportChoiceModal.styles';
+import { SupportChoiceModalProps } from './SupportChoiceModal.types';
+import { navigate } from '../../../utils/navigationref';
+import { showToast } from '../../MainComponents/Toast/ToastHelper';
+import { ToastMessages } from '../../MainComponents/Toast/ToastMessages';
 
-const FaqIcon = ({size = 24, color = 'white', style}) => {
+const FaqIcon = ({ size = 24, color = 'white', style }) => {
   return (
     <Svg
       width={size}
@@ -46,7 +46,7 @@ const FaqIcon = ({size = 24, color = 'white', style}) => {
   );
 };
 
-const WhatsAppIcon = ({size = 24, color = '#25D366'}) => {
+const WhatsAppIcon = ({ size = 24, color = '#25D366' }) => {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -57,7 +57,7 @@ const WhatsAppIcon = ({size = 24, color = '#25D366'}) => {
   );
 };
 
-const EmailIcon = ({size = 24, color = ColorPalette.HOME_BLUE}) => (
+const EmailIcon = ({ size = 24, color = ColorPalette.HOME_BLUE }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path
       d="M22 6C22 4.9 21.1 4 20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6ZM20 6L12 11L4 6H20ZM20 18H4V8L12 13L20 8V18Z"
@@ -66,7 +66,7 @@ const EmailIcon = ({size = 24, color = ColorPalette.HOME_BLUE}) => (
   </Svg>
 );
 
-const GlobeIcon = ({size = 24, color = ColorPalette.HOME_BLUE}) => (
+const GlobeIcon = ({ size = 24, color = ColorPalette.HOME_BLUE }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path
       d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM11 19.93C7.05 19.44 4 16.08 4 12C4 11.38 4.08 10.79 4.21 10.21L9 15V16C9 17.1 9.9 18 11 18V19.93ZM17.9 17.39C17.64 16.58 16.9 16 16 16H15V13C15 12.45 14.55 12 14 12H8V10H10C10.55 10 11 9.55 11 9V7H13C14.1 7 15 6.1 15 5V4.59C17.93 5.78 20 8.65 20 12C20 14.08 19.2 15.97 17.9 17.39Z"
@@ -85,46 +85,52 @@ export const SupportChoiceModal: React.FC<SupportChoiceModalProps> = ({
   const handleFaq = () => {
     navigate('MainScreens', {
       screen: 'Account',
-      params: {screen: 'HelpSupport'},
+      params: { screen: 'HelpSupport' },
     });
     onClose();
   };
 
   const handleWhatsApp = () => {
-    if (!whatsappNumber) {
-      showToast(ToastMessages.SupportChoiceModal.whatsappNotAvailable, 'error');
-      return;
-    }
-    const url = `whatsapp://send?phone=${whatsappNumber}`;
+    // Hardcoded static WhatsApp number as requested
+    const staticWhatsApp = '+35679650714';
+    const sanitizedNumber = staticWhatsApp.replace(/[^\d+]/g, '');
+
+    const url = `whatsapp://send?phone=${sanitizedNumber}`;
+    const fallbackUrl = `https://wa.me/${sanitizedNumber.replace('+', '')}`;
+
     Linking.canOpenURL(url)
       .then(supported => {
         if (supported) {
-          Linking.openURL(url);
+          return Linking.openURL(url);
         } else {
-          showToast(
-            ToastMessages.SupportChoiceModal.whatsappNotInstalled,
-            'error',
-          );
+          return Linking.openURL(fallbackUrl);
         }
       })
-      .catch(err => console.error('An error occurred', err));
-    onClose();
+      .catch(err => {
+        console.error('An error occurred', err);
+        showToast(
+          ToastMessages.SupportChoiceModal.whatsappNotInstalled,
+          'error',
+        );
+      })
+      .finally(() => {
+        onClose();
+      });
   };
 
   const handleEmail = () => {
-    if (!supportEmail) {
-      showToast(
-        ToastMessages.SupportChoiceModal.supportEmailNotAvailable,
-        'error',
-      );
-      return;
-    }
-    const url = `mailto:${supportEmail}`;
-    Linking.openURL(url).catch(err => {
-      console.error('An error occurred', err);
-      showToast(ToastMessages.SupportChoiceModal.couldNotOpenMailApp, 'error');
-    });
-    onClose();
+    // Hardcoded static Email as requested
+    const staticEmail = 'info@surf.mt';
+    const url = `mailto:${staticEmail}`;
+
+    Linking.openURL(url)
+      .catch(err => {
+        console.error('An error occurred', err);
+        showToast(ToastMessages.SupportChoiceModal.couldNotOpenMailApp, 'error');
+      })
+      .finally(() => {
+        onClose();
+      });
   };
 
   return (
@@ -188,7 +194,7 @@ export const SupportChoiceModal: React.FC<SupportChoiceModalProps> = ({
                 <View
                   style={[
                     styles.optionIcon,
-                    {backgroundColor: ColorPalette.GREEN_10},
+                    { backgroundColor: ColorPalette.GREEN_10 },
                   ]}>
                   <WhatsAppIcon />
                 </View>
@@ -196,12 +202,12 @@ export const SupportChoiceModal: React.FC<SupportChoiceModalProps> = ({
                   <Typography
                     variant={TypographyVariant.LMEDIUM_SEMIBOLD}
                     text="WhatsApp"
-                    customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+                    customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
                   />
                   <Typography
                     variant={TypographyVariant.PXSMALL_REGULAR}
                     text="Chat with us on WhatsApp"
-                    customTextStyles={{color: ColorPalette.TEXT_GREY_300}}
+                    customTextStyles={{ color: ColorPalette.TEXT_GREY_300 }}
                   />
                 </View>
               </TouchableOpacity>
@@ -212,7 +218,7 @@ export const SupportChoiceModal: React.FC<SupportChoiceModalProps> = ({
                 <View
                   style={[
                     styles.optionIcon,
-                    {backgroundColor: ColorPalette.PURPLE_10},
+                    { backgroundColor: ColorPalette.PURPLE_10 },
                   ]}>
                   <EmailIcon color="#9010CF" />
                 </View>
@@ -220,12 +226,12 @@ export const SupportChoiceModal: React.FC<SupportChoiceModalProps> = ({
                   <Typography
                     variant={TypographyVariant.LMEDIUM_SEMIBOLD}
                     text="Email"
-                    customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+                    customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
                   />
                   <Typography
                     variant={TypographyVariant.PXSMALL_REGULAR}
                     text="Send us an email"
-                    customTextStyles={{color: ColorPalette.TEXT_GREY_300}}
+                    customTextStyles={{ color: ColorPalette.TEXT_GREY_300 }}
                   />
                 </View>
               </TouchableOpacity>
@@ -243,7 +249,7 @@ export const SupportChoiceModal: React.FC<SupportChoiceModalProps> = ({
                   <View
                     style={[
                       styles.optionIcon,
-                      {backgroundColor: 'rgba(0, 122, 255, 0.1)'},
+                      { backgroundColor: 'rgba(0, 122, 255, 0.1)' },
                     ]}>
                     <GlobeIcon color="#007AFF" />
                   </View>
@@ -251,12 +257,12 @@ export const SupportChoiceModal: React.FC<SupportChoiceModalProps> = ({
                     <Typography
                       variant={TypographyVariant.LMEDIUM_SEMIBOLD}
                       text="Contact via Website"
-                      customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+                      customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
                     />
                     <Typography
                       variant={TypographyVariant.PXSMALL_REGULAR}
                       text="Visit our support page"
-                      customTextStyles={{color: ColorPalette.TEXT_GREY_300}}
+                      customTextStyles={{ color: ColorPalette.TEXT_GREY_300 }}
                     />
                   </View>
                 </TouchableOpacity>
