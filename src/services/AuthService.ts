@@ -1,5 +1,6 @@
 import axios from 'axios';
-import {API_ENDPOINTS, AUTH_HEADER} from '../config/ApiConfig';
+import { API_ENDPOINTS, AUTH_HEADER } from '../config/ApiConfig';
+import { mapApiError } from '../utils/ErrorUtils';
 
 export const googleLogin = async (
   email: string,
@@ -27,9 +28,10 @@ export const googleLogin = async (
     console.error('Error during Google login API call:', error);
     return {
       result: false,
-      message:
+      message: mapApiError(
         error.response?.data?.message ||
         'Failed to authenticate with Google backend',
+      ),
     };
   }
 };
@@ -54,7 +56,7 @@ export const sendWhatsAppOtp = async (phoneNumber: string) => {
     console.error('Error sending WhatsApp OTP:', error);
     return {
       generated_otp: null,
-      message: error.response?.data?.message || 'Failed to send OTP',
+      message: mapApiError(error.response?.data?.message || 'Failed to send OTP'),
     };
   }
 };
@@ -80,7 +82,7 @@ export const verifyWhatsAppOtp = async (phoneNumber: string, otp: string) => {
     console.error('Error verifying WhatsApp OTP:', error);
     return {
       result: false,
-      message: error.response?.data?.message || 'Failed to verify OTP',
+      message: mapApiError(error.response?.data?.message || 'Failed to verify OTP'),
     };
   }
 };
@@ -105,7 +107,7 @@ export const sendWhatsAppOtpForSignup = async (phoneNumber: string) => {
     console.error('Error sending WhatsApp OTP for signup:', error);
     return {
       generated_otp: null,
-      message: error.response?.data?.message || 'Failed to send OTP',
+      message: mapApiError(error.response?.data?.message || 'Failed to send OTP'),
     };
   }
 };
@@ -134,7 +136,7 @@ export const verifyWhatsAppOtpForSignup = async (
     console.error('Error verifying WhatsApp OTP for signup:', error);
     return {
       result: false,
-      message: error.response?.data?.message || 'Failed to verify OTP',
+      message: mapApiError(error.response?.data?.message || 'Failed to verify OTP'),
     };
   }
 };
@@ -159,7 +161,7 @@ export const sendEmailOtpForSignup = async (email: string) => {
     console.error('Error sending Email OTP for signup:', error);
     return {
       generated_otp: null,
-      message: error.response?.data?.message || 'Failed to send OTP',
+      message: mapApiError(error.response?.data?.message || 'Failed to send OTP'),
     };
   }
 };
@@ -186,7 +188,7 @@ export const verifyEmailOtpForSignup = async (email: string, otp: string) => {
     return {
       is_verifield: false,
       result: false,
-      message: error.response?.data?.message || 'Failed to verify OTP',
+      message: mapApiError(error.response?.data?.message || 'Failed to verify OTP'),
     };
   }
 };
@@ -211,7 +213,7 @@ export const createAccountV2 = async (data: {
     console.error('Error creating account V2:', error);
     return {
       result: false,
-      message: error.response?.data?.message || 'Failed to create account',
+      message: mapApiError(error.response?.data?.message || 'Failed to create account'),
     };
   }
 };

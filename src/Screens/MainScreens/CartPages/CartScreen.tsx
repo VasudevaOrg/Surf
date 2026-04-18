@@ -14,6 +14,7 @@ import {
 } from '@react-navigation/native';
 import axios from 'axios';
 import { goBack, navigate } from '../../../utils/navigationref';
+import { mapApiError } from '../../../utils/ErrorUtils';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './CartScreen.styles';
 import { Header } from '../../../components/CustomComponents/Header/Header';
@@ -93,6 +94,9 @@ const CartScreen = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<any>(null);
   const isBuyNowSession = useSelector(
     (state: RootState) => state.cart.isBuyNowSession,
+  );
+  const minCartAmount = useSelector(
+    (state: RootState) => state.app.minCartAmount,
   );
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -321,14 +325,14 @@ const CartScreen = () => {
           const sub = parseFloat(data?.cart?.subtotal || displaySubtotal || 0);
           if (
             sub > 0 &&
-            sub < 20 &&
+            sub < minCartAmount &&
             !isBuyNowMode &&
-            !filtered.some(n => n.message.includes('20'))
+            !filtered.some(n => n.message.includes(String(minCartAmount)))
           ) {
             filtered.push({
               type: 'W',
               message:
-                'Minimum order value is €20.00. Please add more items to proceed.',
+                `Minimum order value is €${minCartAmount.toFixed(2)}. Please add more items to proceed.`,
             });
           }
 
@@ -601,9 +605,11 @@ const CartScreen = () => {
         }
       } else {
         console.error('Order Placement Failed:', result.message);
-        Alert.alert('Order Failed', result.message || 'Failed to place order', [
-          { text: 'OK' },
-        ]);
+        Alert.alert(
+          'Order Failed',
+          mapApiError(result.message || 'Failed to place order'),
+          [{ text: 'OK' }],
+        );
       }
     } catch (error) {
       console.error('Order Submit Error', error);
@@ -695,10 +701,10 @@ const CartScreen = () => {
             );
           } else if (couponError) {
             setCouponCode('');
-            Alert.alert('Coupon Error', (couponError as any).message);
+            Alert.alert('Coupon Error', mapApiError((couponError as any).message));
           } else if (data.result === false && data.message) {
             setCouponCode('');
-            Alert.alert('Coupon Error', data.message);
+            Alert.alert('Coupon Error', mapApiError(data.message));
           } else if (!isCouponActive) {
             setCouponCode('');
             // Silently rejected by the backend or invalid code
@@ -718,9 +724,13 @@ const CartScreen = () => {
   );
 
   const handleStepPress = (stepId: number) => {
+    // Nav Guard: Guest users cannot change screens by tapping on the numbers
+    if (!userId) {
+      return;
+    }
     // Nav Guard: If moving from Step 1 to further, must satisfy MOV
-    if (stepId > 1 && computedTotals.subtotal < 20) {
-      showToast(`Subtotal must be at least €20.00 to continue.`, 'error');
+    if (stepId > 1 && computedTotals.subtotal < minCartAmount) {
+      showToast(`Subtotal must be at least €${minCartAmount.toFixed(2)} to continue.`, 'error');
       return;
     }
 
@@ -757,7 +767,7 @@ const CartScreen = () => {
       } catch (err: any) {
         showToast(
           ToastMessages.CartScreen.removeItemError(
-            (err as any)?.message || String(err),
+            mapApiError((err as any)?.message || String(err)),
           ),
           'error',
         );
@@ -801,7 +811,7 @@ const CartScreen = () => {
       } catch (err: any) {
         showToast(
           ToastMessages.CartScreen.updateQuantityError(
-            (err as any)?.message || String(err),
+            mapApiError((err as any)?.message || String(err)),
           ),
           'error',
         );
@@ -1027,7 +1037,7 @@ const CartScreen = () => {
                 const hasCriticalError = apiNotifications.some(
                   n => n.type === 'E',
                 );
-                const isBelowMOV = sub > 0 && sub < 20 && !isBuyNowMode;
+                const isBelowMOV = sub > 0 && sub < minCartAmount && !isBuyNowMode;
                 const isShippingRequiredButMissing =
                   currentStep === 2 && !selectedShippingMethod;
 
@@ -1041,7 +1051,7 @@ const CartScreen = () => {
                 const hasCriticalError = apiNotifications.some(
                   n => n.type === 'E',
                 );
-                const isBelowMOV = sub > 0 && sub < 20 && !isBuyNowMode;
+                const isBelowMOV = sub > 0 && sub < minCartAmount && !isBuyNowMode;
 
                 // On step 2 (Address), also ensure a shipping method is selected if possible
                 const isShippingRequiredButMissing =

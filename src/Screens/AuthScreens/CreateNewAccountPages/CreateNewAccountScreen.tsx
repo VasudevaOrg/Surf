@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { styles } from './CreateNewAccountScreen.styles';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { mapApiError } from '../../../utils/ErrorUtils';
 import { Header } from '../../../components/CustomComponents/Header/Header';
 import { TypographyVariant } from '../../../components/MainComponents/Typography/Typography.types';
 import ColorPalette from '../../../config/ColorPalette';
@@ -135,32 +136,30 @@ const CreateNewAccountScreen = () => {
           verificationMethod: selectedMethod,
         });
       } else {
+        const mappedMessage = mapApiError(response.message);
         if (Platform.OS === 'android') {
           showToast(
-            ToastMessages.CreateNewAccountScreen.otpFailed(response.message),
+            ToastMessages.CreateNewAccountScreen.otpFailed(mappedMessage),
             'error',
           );
         } else {
           showToast(
-            ToastMessages.CreateNewAccountScreen.otpFailed(response.message),
+            ToastMessages.CreateNewAccountScreen.otpFailed(mappedMessage),
             'error',
           );
         }
       }
     } catch (error: any) {
       console.error('Error initiating signup:', error);
+      const mappedMessage = mapApiError(error.response?.data?.message);
       if (Platform.OS === 'android') {
         showToast(
-          ToastMessages.CreateNewAccountScreen.signupFailed(
-            error.response?.data?.message,
-          ),
+          ToastMessages.CreateNewAccountScreen.signupFailed(mappedMessage),
           'error',
         );
       } else {
         showToast(
-          ToastMessages.CreateNewAccountScreen.signupFailed(
-            error.response?.data?.message,
-          ),
+          ToastMessages.CreateNewAccountScreen.signupFailed(mappedMessage),
           'error',
         );
       }

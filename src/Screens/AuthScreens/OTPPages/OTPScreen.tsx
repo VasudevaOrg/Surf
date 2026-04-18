@@ -26,6 +26,7 @@ import { clearGuestCart } from '../../../store/slices/cartSlice';
 import Toast from 'react-native-toast-message';
 import { showToast } from '../../../components/MainComponents/Toast/ToastHelper';
 import { ToastMessages } from '../../../components/MainComponents/Toast/ToastMessages';
+import { mapApiError } from '../../../utils/ErrorUtils';
 
 const { promptTitleWhatsapp, promptTitleEmail, otpSent, resendText, verifyText } =
   STATIC_TEXT.screens.otpScreen;
@@ -132,7 +133,7 @@ const OTPScreen = ({ route, navigation }: any) => {
             setSecondsLeft(30);
           } else {
             showToast(
-              ToastMessages.OTPScreen.otpResendFailed(response.message),
+              ToastMessages.OTPScreen.otpResendFailed(mapApiError(response.message)),
               'error',
             );
           }
@@ -163,7 +164,7 @@ const OTPScreen = ({ route, navigation }: any) => {
             setSecondsLeft(30);
           } else {
             showToast(
-              ToastMessages.OTPScreen.otpResendFailed(response.message),
+              ToastMessages.OTPScreen.otpResendFailed(mapApiError(response.message)),
               'error',
             );
           }
@@ -197,14 +198,17 @@ const OTPScreen = ({ route, navigation }: any) => {
           setSecondsLeft(30);
         } else {
           showToast(
-            ToastMessages.OTPScreen.otpResendFailed(data.message),
+            ToastMessages.OTPScreen.otpResendFailed(mapApiError(data.message)),
             'error',
           );
         }
       }
     } catch (err: any) {
       console.error('Resend OTP error:', err);
-      showToast(ToastMessages.OTPScreen.otpResendFailed(err.message), 'error');
+      showToast(
+        ToastMessages.OTPScreen.otpResendFailed(mapApiError(err.message)),
+        'error',
+      );
     }
   };
 
@@ -345,12 +349,10 @@ const OTPScreen = ({ route, navigation }: any) => {
               returnTo,
             });
           } else {
-            const errorMessage =
-              signupResponse.message === 'not_found'
-                ? 'Account not found'
-                : signupResponse.message === 'otp_not_verified'
-                  ? 'OTP is incorrect'
-                  : signupResponse.message || 'Failed to create account.';
+            const rawMessage = signupResponse.message || 'otp_not_verified';
+            const errorMessage = mapApiError(
+              rawMessage === 'not_found' ? 'otp_not_verified' : rawMessage,
+            );
             setError(errorMessage);
             showToast(errorMessage, 'error');
           }
@@ -389,12 +391,10 @@ const OTPScreen = ({ route, navigation }: any) => {
 
         return;
       } else {
-        const errorMessage =
-          data?.message === 'not_found'
-            ? 'Account not found'
-            : data?.message === 'otp_not_verified'
-              ? 'OTP is incorrect'
-              : data?.message || 'Invalid OTP';
+        const rawMessage = data?.message || 'otp_not_verified';
+        const errorMessage = mapApiError(
+          rawMessage === 'not_found' ? 'otp_not_verified' : rawMessage,
+        );
         setError(errorMessage);
         showToast(errorMessage, 'error');
       }
@@ -472,12 +472,11 @@ const OTPScreen = ({ route, navigation }: any) => {
             });
           }
         } else {
+          const rawMessage = data?.message || 'otp_not_verified';
           setError(
-            data?.message === 'not_found'
-              ? 'Account not found'
-              : data?.message === 'otp_not_verified'
-                ? 'OTP is incorrect'
-                : data?.message || 'Invalid OTP. Please try again.',
+            mapApiError(
+              rawMessage === 'not_found' ? 'otp_not_verified' : rawMessage,
+            ),
           );
         }
         return;
@@ -551,6 +550,17 @@ const OTPScreen = ({ route, navigation }: any) => {
               }}
             />
           </View>
+          {error ? (
+            <Typography
+              text={error}
+              variant={TypographyVariant.LSMALL_MEDIUM}
+              customTextStyles={{
+                color: ColorPalette.RED_200,
+                marginTop: 8,
+                textAlign: 'center',
+              }}
+            />
+          ) : null}
 
           <View style={styles.resendContainer}>
             <View style={styles.resendRow}>

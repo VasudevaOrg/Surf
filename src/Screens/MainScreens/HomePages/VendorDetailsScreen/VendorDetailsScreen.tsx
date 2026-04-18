@@ -459,7 +459,7 @@ const VendorDetailsScreen: React.FC<VendorDetailsScreenProps> = ({ route }) => {
                 onPress={() => { }}
                 showReadMore={true}
                 showFollowButton={false}
-                showBanner={true}
+                showBanner={false}
               />
             )}
           </View>

@@ -7,12 +7,9 @@ import {
   ImageSourcePropType,
   ActivityIndicator,
 } from 'react-native';
-import StarRating from '../../../../../assets/icons/StarRating';
-import CloseIcon from '../../../../../assets/icons/CloseIcon';
-import CameraIcon from '../../../../../assets/icons/CameraIcon';
 import LinearGradient from 'react-native-linear-gradient';
 import ColorPalette from '../../../config/ColorPalette';
-import {Typography} from '../Typography/Typography';
+import { Typography } from '../Typography/Typography';
 import {
   createButtonStyles,
   getBackgroundColor,
@@ -64,16 +61,16 @@ export const Button: React.FC<ButtonProps> = ({
   const shadowStyle =
     withShadow && type !== ButtonType.OUTLINED
       ? Platform.select({
-          ios: {
-            shadowColor: 'rgba(16, 24, 40, 0.08)',
-            shadowOffset: {width: 0, height: 6},
-            shadowOpacity: 1,
-            shadowRadius: buttonHeight / 5,
-          },
-          android: {
-            elevation: 10,
-          } as any,
-        })
+        ios: {
+          shadowColor: 'rgba(16, 24, 40, 0.08)',
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 1,
+          shadowRadius: buttonHeight / 5,
+        },
+        android: {
+          elevation: 10,
+        } as any,
+      })
       : {};
 
   const customBorderRadius = (customStyles as any)?.borderRadius;
@@ -84,8 +81,8 @@ export const Button: React.FC<ButtonProps> = ({
       backgroundColor: useCustomBgColor
         ? (bgColor as any)
         : typeof backgroundColor === 'object'
-        ? 'transparent'
-        : backgroundColor,
+          ? 'transparent'
+          : backgroundColor,
       opacity: currentState === ButtonState.DISABLED ? 0.5 : 1,
     },
     type === ButtonType.OUTLINED && {
@@ -121,7 +118,7 @@ export const Button: React.FC<ButtonProps> = ({
     // Handle multiple left images with overlapping effect
     if (leftImages && leftImages.length > 0) {
       return (
-        <View style={[styles.imagesGroup, {marginRight: 8}]}>
+        <View style={[styles.imagesGroup, { marginRight: 8 }]}>
           {leftImages.map((imageItem, index) => (
             <View
               key={`left-image-container-${index}`}
@@ -221,7 +218,7 @@ export const Button: React.FC<ButtonProps> = ({
             variant={getTypographyVariant(size)}
             text={text}
             customTextStyles={[
-              {color: getTextColor(variant, type, currentState) as string},
+              { color: getTextColor(variant, type, currentState) as string },
               customTextStyles as any,
             ]}
           />
@@ -245,13 +242,13 @@ export const Button: React.FC<ButtonProps> = ({
       typeof backgroundColor === 'object' && backgroundColor !== null
         ? (backgroundColor as any)
         : ({
-            colors:
-              variant === ButtonVariant.PRIMARY
-                ? ColorPalette.SELLER_PRIMARY_GRADIENT.colors
-                : [ColorPalette.ROSE_PURPLE_300, ColorPalette.ROSE_PURPLE_400],
-            start: (ColorPalette.SELLER_PRIMARY_GRADIENT as any).start,
-            end: (ColorPalette.SELLER_PRIMARY_GRADIENT as any).end,
-          } as any);
+          colors:
+            variant === ButtonVariant.PRIMARY
+              ? ColorPalette.SELLER_PRIMARY_GRADIENT.colors
+              : [ColorPalette.ROSE_PURPLE_300, ColorPalette.ROSE_PURPLE_400],
+          start: (ColorPalette.SELLER_PRIMARY_GRADIENT as any).start,
+          end: (ColorPalette.SELLER_PRIMARY_GRADIENT as any).end,
+        } as any);
 
     const gradientBorderRadius =
       customBorderRadius !== undefined
@@ -261,13 +258,13 @@ export const Button: React.FC<ButtonProps> = ({
     return (
       <TouchableOpacity
         onPress={onPress}
-        disabled={disabled || loading}
+        disabled={currentState === ButtonState.DISABLED}
         style={containerStyle}>
         <LinearGradient
           colors={gradientConfig.colors}
           start={gradientConfig.start}
           end={gradientConfig.end}
-          style={[styles.gradient, {borderRadius: gradientBorderRadius}]}
+          style={[styles.gradient, { borderRadius: gradientBorderRadius }]}
         />
         {renderContent()}
       </TouchableOpacity>
@@ -277,7 +274,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      disabled={disabled || loading}
+      disabled={currentState === ButtonState.DISABLED}
       style={containerStyle}>
       {renderContent()}
     </TouchableOpacity>

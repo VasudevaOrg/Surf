@@ -20,6 +20,7 @@ import {
 import GoogleLogo from '../../../assets/icons/GoogleLogo';
 import AnimatedTextInput from '../../../components/MainComponents/TextInput/TextInput';
 import { styles } from './WhatsAppAndEmailLogInScreen.styles';
+import { mapApiError } from '../../../utils/ErrorUtils';
 import { BorderRadius, Spacing } from '../../../config/globalStyles';
 import { SelectCountryModal } from '../../../components/CustomComponents/SelectCountryModal/SelectCountryModal';
 import { useDispatch } from 'react-redux';
@@ -181,7 +182,9 @@ const WhatsAppAndEmailLogInScreen = ({ route }: any) => {
             });
           }, 1000);
         } else {
-          setError(response.message || 'Failed to send OTP via WhatsApp');
+          setError(
+            mapApiError(response.message || 'Failed to send OTP via WhatsApp'),
+          );
         }
       } catch (err) {
         console.error('WhatsApp Login error:', err);
@@ -233,13 +236,16 @@ const WhatsAppAndEmailLogInScreen = ({ route }: any) => {
             returnTo,
           });
         } else {
-          setError(data.message || 'Something went wrong. Please try again.');
+          setError(
+            mapApiError(data.message || 'Something went wrong. Please try again.'),
+          );
         }
       } catch (err) {
         console.error('Login error:', err);
         setError(
-          'Failed to connect to the server. Please tell the developer to run the backend server.',
-        );
+          mapApiError(
+            'Failed to connect to the server. Please tell the developer to run the backend server.',
+          ),);
       } finally {
         setIsLoading(false);
       }

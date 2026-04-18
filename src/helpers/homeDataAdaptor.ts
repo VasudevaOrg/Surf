@@ -195,5 +195,8 @@ export const transformHomeData = (apiData: any) => {
         ? apiData.main_categories
         : Object.values(apiData.main_categories)
       : [],
+    min_cart_amount: apiData.min_cart_amount
+      ? parseFloat(apiData.min_cart_amount)
+      : undefined,
   };
 };

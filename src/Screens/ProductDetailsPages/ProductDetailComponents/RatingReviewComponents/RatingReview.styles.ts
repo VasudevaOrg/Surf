@@ -4,7 +4,7 @@ import {
   getScreenHeight,
   getScreenWidth,
 } from "../../../../helpers/screenSize";
-import { Spacing } from "../../../../config/globalStyles";
+import { Spacing, BorderRadius } from "../../../../config/globalStyles";
 import ColorPalette from "../../../../config/ColorPalette";
 
 // Constants for responsive sizing
@@ -83,5 +83,16 @@ export const styles = StyleSheet.create({
   progressBar: {
     height: "100%",
     borderRadius: Spacing.SMALLXX,
+  },
+  writeReviewButton: {
+    marginTop: getScreenHeight(2),
+    alignSelf: 'center',
+    paddingVertical: getScreenHeight(1.2),
+    paddingHorizontal: getScreenWidth(4),
+    borderRadius: BorderRadius.XSmall,
+    borderWidth: 1,
+    borderColor: ColorPalette.ROSE_PURPLE_400,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

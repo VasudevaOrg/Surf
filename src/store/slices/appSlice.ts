@@ -12,6 +12,7 @@ export interface AppState {
     contact_us_page?: string;
     terms_and_conditions_page?: string;
   } | null;
+  minCartAmount: number;
 }
 
 const initialState: AppState = {
@@ -21,6 +22,7 @@ const initialState: AppState = {
   supportWhatsApp: null,
   supportEmail: null,
   pageIds: null,
+  minCartAmount: 20,
 };
 
 const appSlice = createSlice({
@@ -46,12 +48,16 @@ const appSlice = createSlice({
     setPageIds: (state, action: PayloadAction<AppState['pageIds']>) => {
       state.pageIds = action.payload;
     },
+    setMinCartAmount: (state, action: PayloadAction<number>) => {
+      state.minCartAmount = action.payload;
+    },
     resetState: state => {
       state.isLoading = false;
       state.error = null;
       state.data = null;
       state.supportWhatsApp = null;
       state.supportEmail = null;
+      state.minCartAmount = 20;
     },
   },
 });
@@ -62,6 +68,8 @@ export const {
   setData,
   setSupportInfo,
   setPageIds,
+  setMinCartAmount,
   resetState,
 } = appSlice.actions;
+
 export default appSlice.reducer;

@@ -1,5 +1,6 @@
 import axios from 'axios';
-import {API_ENDPOINTS} from '../config/ApiConfig';
+import { API_ENDPOINTS } from '../config/ApiConfig';
+import { mapApiError } from '../utils/ErrorUtils';
 
 export const addToWishlist = async (
   userId: string | number,
@@ -29,7 +30,7 @@ export const addToWishlist = async (
     console.error('Error adding to wishlist:', error);
     const errorMessage =
       error.response?.data?.message || 'Something went wrong';
-    return {success: false, message: errorMessage};
+    return { success: false, message: mapApiError(errorMessage) };
   }
 };
 export const removeFromWishlist = async (
@@ -55,7 +56,7 @@ export const removeFromWishlist = async (
     console.error('Error removing from wishlist:', error);
     const errorMessage =
       error.response?.data?.message || 'Something went wrong';
-    return {success: false, message: errorMessage};
+    return { success: false, message: mapApiError(errorMessage) };
   }
 };
 
@@ -68,6 +69,6 @@ export const getWishlist = async (userId: string | number) => {
     };
   } catch (error: any) {
     console.error('Error fetching wishlist:', error);
-    return {success: false, products: []};
+    return { success: false, products: [] };
   }
 };

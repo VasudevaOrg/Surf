@@ -1,16 +1,16 @@
 import React from 'react';
-import {View, TouchableOpacity} from 'react-native';
-import {styles} from './RatingReview.styles';
-import {RatingCategoryProps, RatingReviewProps} from './RatingReview.types';
-import {Typography} from '../../../../components/MainComponents/Typography/Typography';
-import {TypographyVariant} from '../../../../components/MainComponents/Typography/Typography.types';
+import { View, TouchableOpacity } from 'react-native';
+import { styles } from './RatingReview.styles';
+import { RatingCategoryProps, RatingReviewProps } from './RatingReview.types';
+import { Typography } from '../../../../components/MainComponents/Typography/Typography';
+import { TypographyVariant } from '../../../../components/MainComponents/Typography/Typography.types';
 import ColorPalette from '../../../../config/ColorPalette';
 import StarRating from '../../../../assets/icons/StarRating';
-import {getScreenHeight, getScreenWidth} from '../../../../helpers/screenSize';
+import { getScreenHeight, getScreenWidth } from '../../../../helpers/screenSize';
 import { BorderRadius } from '../../../../config/globalStyles';
 
 const RatingCategory: React.FC<RatingCategoryProps> = React.memo(
-  ({label, count, percentage, color}) => (
+  ({ label, count, percentage, color }) => (
     <View style={styles.categoryContainer}>
       <Typography
         text={label}
@@ -24,7 +24,7 @@ const RatingCategory: React.FC<RatingCategoryProps> = React.memo(
         <View
           style={[
             styles.progressBar,
-            {backgroundColor: color, width: `${Math.min(percentage, 100)}%`},
+            { backgroundColor: color, width: `${Math.min(percentage, 100)}%` },
           ]}
         />
       </View>
@@ -95,7 +95,7 @@ const RatingReview: React.FC<RatingReviewProps> = ({
       <Typography
         text="Product Ratings & Reviews"
         variant={TypographyVariant.H6_MEDIUM}
-        customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+        customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
       />
 
       <View style={styles.contentContainer}>
@@ -104,7 +104,7 @@ const RatingReview: React.FC<RatingReviewProps> = ({
             <Typography
               text={rating?.toFixed(1) || '0.0'}
               variant={TypographyVariant.H1_SEMIBOLD}
-              customTextStyles={{color: ColorPalette.GREEN_200 as any}}
+              customTextStyles={{ color: ColorPalette.GREEN_200 as any }}
             />
             <StarRating
               color={ColorPalette.GREEN_200 as string}
@@ -116,12 +116,12 @@ const RatingReview: React.FC<RatingReviewProps> = ({
             <Typography
               text={`${totalRatings} Ratings`}
               variant={TypographyVariant.LSMALL_REGULAR}
-              customTextStyles={{color: ColorPalette.TEXT_GREY_100}}
+              customTextStyles={{ color: ColorPalette.TEXT_GREY_100 }}
             />
             <Typography
               text={`${totalReviews} Reviews`}
               variant={TypographyVariant.LSMALL_REGULAR}
-              customTextStyles={{color: ColorPalette.TEXT_GREY_100}}
+              customTextStyles={{ color: ColorPalette.TEXT_GREY_100 }}
             />
           </View>
         </View>
@@ -136,21 +136,12 @@ const RatingReview: React.FC<RatingReviewProps> = ({
               color={category.color as string}
             />
           ))}
-          <TouchableOpacity
-            style={{
-              marginTop: getScreenHeight(1.9),
-              alignSelf: 'flex-start',
-              paddingVertical: getScreenHeight(1),
-              paddingHorizontal: getScreenWidth(3.2),
-              borderRadius: BorderRadius.XSmall,
-              borderWidth: 1,
-              borderColor: ColorPalette.ROSE_PURPLE_400,
-            }}
-            onPress={onWriteReview}>
+
+          <TouchableOpacity style={styles.writeReviewButton} onPress={onWriteReview}>
             <Typography
               text="Write a Review"
               variant={TypographyVariant.LSMALL_BOLD}
-              customTextStyles={{color: ColorPalette.ROSE_PURPLE_400}}
+              customTextStyles={{ color: ColorPalette.ROSE_PURPLE_400 }}
             />
           </TouchableOpacity>
         </View>

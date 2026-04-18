@@ -1,5 +1,6 @@
 import axios from 'axios';
-import {API_ENDPOINTS, AUTH_HEADER} from '../config/ApiConfig';
+import { API_ENDPOINTS, AUTH_HEADER } from '../config/ApiConfig';
+import { mapApiError } from '../utils/ErrorUtils';
 
 export const addToCart = async (
   productId: string | number,
@@ -15,11 +16,11 @@ export const addToCart = async (
       productData && Array.isArray(productData)
         ? productData
         : [
-            {
-              product_id: String(productId),
-              amount: amount,
-            },
-          ];
+          {
+            product_id: String(productId),
+            amount: amount,
+          },
+        ];
 
     const payload = {
       user_id: parseInt(String(userId), 10),
@@ -41,15 +42,16 @@ export const addToCart = async (
         'Content-Type': 'application/json',
       },
     });
-    return {success: true, data: response.data};
+    return { success: true, data: response.data };
   } catch (error: any) {
     console.error('Add to cart error:', error);
     return {
       success: false,
-      message:
+      message: mapApiError(
         error.response?.data?.message ||
         error.message ||
         'Failed to add item to cart',
+      ),
     };
   }
 };
@@ -60,7 +62,7 @@ export const getCart = async (userId: string | number) => {
     console.log('--- API Triggered: getCart ---');
     console.log('URL:', url);
     console.log('Method: GET');
-    console.log('Headers:', {Authorization: AUTH_HEADER});
+    console.log('Headers:', { Authorization: AUTH_HEADER });
 
     const response = await axios.get(url, {
       headers: {
@@ -73,12 +75,12 @@ export const getCart = async (userId: string | number) => {
         cart: response.data,
       };
     }
-    return {success: false, message: 'No data returned'};
+    return { success: false, message: 'No data returned' };
   } catch (error: any) {
     console.error('Get cart error:', error);
     return {
       success: false,
-      message: error.message || 'Failed to fetch cart',
+      message: mapApiError(error.message || 'Failed to fetch cart'),
     };
   }
 };
@@ -112,10 +114,10 @@ export const updateCartQuantity = async (
         'Content-Type': 'application/json',
       },
     });
-    return {success: true, data: response.data};
+    return { success: true, data: response.data };
   } catch (error: any) {
     console.error('Update cart quantity error:', error);
-    return {success: false, message: error.message};
+    return { success: false, message: mapApiError(error.message) };
   }
 };
 
@@ -146,10 +148,10 @@ export const removeFromCart = async (
         'Content-Type': 'application/json',
       },
     });
-    return {success: true, data: response.data};
+    return { success: true, data: response.data };
   } catch (error: any) {
     console.error('Remove from cart error:', error);
-    return {success: false, message: error.message};
+    return { success: false, message: mapApiError(error.message) };
   }
 };
 
@@ -176,10 +178,10 @@ export const clearCart = async (userId: string | number) => {
         'Content-Type': 'application/json',
       },
     });
-    return {success: true, data: response.data};
+    return { success: true, data: response.data };
   } catch (error: any) {
     console.error('Clear cart error:', error);
-    return {success: false, message: error.message};
+    return { success: false, message: mapApiError(error.message) };
   }
 };
 
@@ -193,9 +195,8 @@ export const getCheckoutData = async (
     const url = API_ENDPOINTS.NT_CHECKOUT_API(userId, shippingIds, couponCode);
     // Append buy_now_product_id if present
     const finalUrl = buyNowProductId
-      ? `${url}${
-          url.includes('?') ? '&' : '?'
-        }buy_now_product_id=${buyNowProductId}`
+      ? `${url}${url.includes('?') ? '&' : '?'
+      }buy_now_product_id=${buyNowProductId}`
       : url;
     console.log('Calling Checkout API:', finalUrl);
 
@@ -208,7 +209,7 @@ export const getCheckoutData = async (
     console.log('--- API Triggered: getCheckoutData ---');
     console.log('URL:', finalUrl);
     console.log('Method: GET');
-    console.log('Headers:', {Authorization: AUTH_HEADER});
+    console.log('Headers:', { Authorization: AUTH_HEADER });
 
     if (response.data) {
       console.log(
@@ -220,12 +221,12 @@ export const getCheckoutData = async (
         data: response.data,
       };
     }
-    return {success: false, message: 'No data returned'};
+    return { success: false, message: 'No data returned' };
   } catch (error: any) {
     console.error('Get checkout data error:', error);
     return {
       success: false,
-      message: error.message || 'Failed to fetch checkout data',
+      message: mapApiError(error.message || 'Failed to fetch checkout data'),
     };
   }
 };
@@ -280,12 +281,12 @@ export const placeOrder = async (
         data: response.data,
       };
     }
-    return {success: false, message: 'No data returned'};
+    return { success: false, message: 'No data returned' };
   } catch (error: any) {
     console.error('Place order error:', error);
     return {
       success: false,
-      message: error.message || 'Failed to place order',
+      message: mapApiError(error.message || 'Failed to place order'),
     };
   }
 };
@@ -303,7 +304,7 @@ export const syncGuestCart = async (
     console.error('Sync guest cart error:', error);
     return {
       success: false,
-      message: error.message || 'Failed to sync guest cart',
+      message: mapApiError(error.message || 'Failed to sync guest cart'),
     };
   }
 };

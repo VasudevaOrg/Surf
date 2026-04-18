@@ -17,6 +17,7 @@ interface ShippingMethodRowProps {
   name: string;
   deliveryTime?: string;
   rate: string | number;
+  imageUrl?: string;
 }
 
 const ShippingMethodRow: React.FC<ShippingMethodRowProps> = ({
@@ -25,6 +26,7 @@ const ShippingMethodRow: React.FC<ShippingMethodRowProps> = ({
   name,
   deliveryTime,
   rate,
+  imageUrl,
 }) => {
   return (
     <TouchableOpacity
@@ -32,7 +34,12 @@ const ShippingMethodRow: React.FC<ShippingMethodRowProps> = ({
       onPress={onPress}
       activeOpacity={0.7}>
       <View style={styles.leftSection}>
-        {name === 'Loginext' ? (
+        {imageUrl ? (
+          <Image
+            source={{ uri: imageUrl }}
+            style={[styles.shippingImage]}
+          />
+        ) : name === 'Loginext' ? (
           <Image
             source={require('../../../../../assets/images/maltapost.png')}
             style={[styles.shippingImage]}

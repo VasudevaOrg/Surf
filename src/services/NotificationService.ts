@@ -2,6 +2,7 @@ import messaging from '@react-native-firebase/messaging';
 import { PermissionsAndroid, Platform } from 'react-native';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../config/ApiConfig';
+import { mapApiError } from '../utils/ErrorUtils';
 
 export const requestUserPermission = async () => {
   try {
@@ -100,7 +101,7 @@ export const getNotifications = async (userId: string | number) => {
     return { success: true, notifications: response.data.notifications || [] };
   } catch (error: any) {
     console.error('Error in getNotifications:', error.message);
-    return { success: false, message: error.message };
+    return { success: false, message: mapApiError(error.message) };
   }
 };
 
@@ -120,7 +121,7 @@ export const markNotificationsRead = async (
     return { success: true, data: response.data };
   } catch (error: any) {
     console.error('Error in markNotificationsRead:', error.message);
-    return { success: false, message: error.message };
+    return { success: false, message: mapApiError(error.message) };
   }
 };
 
@@ -140,6 +141,6 @@ export const deleteNotifications = async (
     return { success: true, data: response.data };
   } catch (error: any) {
     console.error('Error in deleteNotifications:', error.message);
-    return { success: false, message: error.message };
+    return { success: false, message: mapApiError(error.message) };
   }
 };

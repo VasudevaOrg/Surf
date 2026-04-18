@@ -1,10 +1,10 @@
-import React, {useState, useEffect} from 'react';
-import {View, ScrollView, ActivityIndicator} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, ScrollView, ActivityIndicator } from 'react-native';
 import axios from 'axios';
-import {styles} from './AddressStep.styles';
+import { styles } from './AddressStep.styles';
 import AddressItem from '../../../../../components/CustomComponents/CartComponents/AddressComponent/AddressItem';
-import {Typography} from '../../../../../components/MainComponents/Typography/Typography';
-import {TypographyVariant} from '../../../../../components/MainComponents/Typography/Typography.types';
+import { Typography } from '../../../../../components/MainComponents/Typography/Typography';
+import { TypographyVariant } from '../../../../../components/MainComponents/Typography/Typography.types';
 import ColorPalette from '../../../../../config/ColorPalette';
 import {
   getScreenHeight,
@@ -17,11 +17,11 @@ import {
   ButtonType,
   ButtonVariant,
 } from '../../../../../components/MainComponents/Button';
-import {Spacing} from '../../../../../config/globalStyles';
-import {navigate} from '../../../../../utils/navigationref';
-import {API_ENDPOINTS, AUTH_HEADER} from '../../../../../config/ApiConfig';
-import {useSelector} from 'react-redux';
-import {RootState} from '../../../../../store';
+import { Spacing } from '../../../../../config/globalStyles';
+import { navigate } from '../../../../../utils/navigationref';
+import { API_ENDPOINTS, AUTH_HEADER } from '../../../../../config/ApiConfig';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../../../store';
 import LocationPinIcon from '../../../../../assets/icons/LocationPinIcon';
 import ShippingMethodRow from '../../../../../components/CustomComponents/CartComponents/PaymentComponents/ShippingMethodRow/ShippingMethodRow';
 
@@ -84,9 +84,8 @@ const AddressStep: React.FC<AddressStepProps> = ({
             id: 'default',
             name: `${profile.firstname || ''} ${profile.lastname || ''}`.trim(),
             houseNo: profile.s_address || '',
-            streetName: `${profile.s_address_2 || ''}, ${
-              profile.s_city || ''
-            }, ${profile.s_zipcode || ''}`.trim(),
+            streetName: `${profile.s_address_2 || ''}, ${profile.s_city || ''
+              }, ${profile.s_zipcode || ''}`.trim(),
             country: profile.s_country_descr || profile.s_country || '',
             phoneNumber: profile.phone || profile.s_phone || '',
             tag: 'Default Dispatching',
@@ -127,9 +126,9 @@ const AddressStep: React.FC<AddressStepProps> = ({
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={{gap: getScreenHeight(2)}}>
+        <View style={{ gap: getScreenHeight(2) }}>
           {loading || isLoading ? (
-            <View style={{paddingVertical: getScreenHeight(10)}}>
+            <View style={{ paddingVertical: getScreenHeight(10) }}>
               <ActivityIndicator size="large" color={ColorPalette.PRIMARY} />
             </View>
           ) : (
@@ -148,7 +147,7 @@ const AddressStep: React.FC<AddressStepProps> = ({
                 />
                 <Typography
                   variant={TypographyVariant.LMEDIUM_REGULAR}
-                  customTextStyles={{color: ColorPalette.TEXT_GREY_100}}>
+                  customTextStyles={{ color: ColorPalette.TEXT_GREY_100 }}>
                   Select delivery address
                 </Typography>
               </View>
@@ -206,13 +205,14 @@ const AddressStep: React.FC<AddressStepProps> = ({
                           name={shipping.shipping}
                           deliveryTime={shipping.service_delivery_time}
                           rate={shipping.format_rate || shipping.rate}
+                          imageUrl={shipping.image_url}
                         />
                       ),
                     )}
                   </View>
                 </View>
               ) : (
-                <View style={{padding: Spacing.Medium, alignItems: 'center'}}>
+                <View style={{ padding: Spacing.Medium, alignItems: 'center' }}>
                   {/* Explicitly show top-level API message if present */}
                   {checkoutData?.message && (
                     <Typography

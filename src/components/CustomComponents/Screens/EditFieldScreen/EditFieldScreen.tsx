@@ -17,6 +17,7 @@ import AnimatedTextInput from '../../../MainComponents/TextInput/TextInput';
 import { Typography } from '../../../MainComponents/Typography/Typography';
 import { TypographyVariant } from '../../../MainComponents/Typography/Typography.types';
 import { styles } from './EditFieldScreen.styles';
+import { mapApiError, mapFieldLabel } from '../../../../utils/ErrorUtils';
 import {
   EditFieldParams,
   ErrorValues,
@@ -308,9 +309,11 @@ const EditFieldScreen: React.FC<UpdatedEditFieldScreenProps> = ({
         const errorMessage =
           error.response?.status === 504
             ? 'Server timeout (504). Please try again later.'
-            : error.response?.data?.message ||
-            error.message ||
-            'Failed to update profile';
+            : mapApiError(
+              error.response?.data?.message ||
+              error.message ||
+              'Failed to update profile',
+            );
         if (Platform.OS === 'android') {
           ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
         } else {
@@ -491,9 +494,11 @@ const EditFieldScreen: React.FC<UpdatedEditFieldScreenProps> = ({
         const errorMessage =
           error.response?.status === 504
             ? 'Server timeout (504). Please try again later.'
-            : error.response?.data?.message ||
-            error.message ||
-            'Failed to update profile';
+            : mapApiError(
+              error.response?.data?.message ||
+              error.message ||
+              'Failed to update profile',
+            );
         if (Platform.OS === 'android') {
           ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
         } else {
@@ -520,10 +525,10 @@ const EditFieldScreen: React.FC<UpdatedEditFieldScreenProps> = ({
     // <SafeAreaView style={styles.container} edges={['bottom']}>
     <ScreenWrapper
       backgroundColor={ColorPalette.WHITE}
-          edges={['top', 'bottom']}
+      edges={['top', 'bottom']}
     >
       <Header
-        name={headerTitle || `Update your ${fieldType}`}
+        name={headerTitle || `Update your ${mapFieldLabel(fieldType)}`}
         variant={TypographyVariant.H6_MEDIUM}
         textColor={ColorPalette.AgreeTerms as string}
         leftIcons={[
@@ -594,7 +599,7 @@ const EditFieldScreen: React.FC<UpdatedEditFieldScreenProps> = ({
                 </View>
               ) : (
                 <AnimatedTextInput
-                  label={label || fieldType}
+                  label={label || mapFieldLabel(fieldType)}
                   value={fieldValue}
                   onChangeText={handleSingleFieldChange}
                   keyboardType={keyboardType as any}
@@ -604,7 +609,7 @@ const EditFieldScreen: React.FC<UpdatedEditFieldScreenProps> = ({
                   }
                   customBorderColor={
                     error
-                      ? (ColorPalette.RED_00 as string)
+                      ? (ColorPalette.RED_200 as string)
                       : (ColorPalette.TEXT_GREY_400 as string)
                   }
                   customContainerStyles={{

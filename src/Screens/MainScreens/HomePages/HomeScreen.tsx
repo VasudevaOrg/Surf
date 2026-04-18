@@ -62,7 +62,11 @@ import {
 import { Alert, Platform, ToastAndroid } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../store';
-import { setSupportInfo, setPageIds } from '../../../store/slices/appSlice';
+import {
+  setSupportInfo,
+  setPageIds,
+  setMinCartAmount,
+} from '../../../store/slices/appSlice';
 import { addSearch } from '../../../store/slices/searchSlice';
 import { addGuestItem, addItemToCart } from '../../../store/slices/cartSlice';
 import {
@@ -141,6 +145,7 @@ const HomeScreen = () => {
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
   const [isVoiceModalVisible, setIsVoiceModalVisible] = useState(false);
   const userId = useSelector((state: RootState) => state.auth.userId);
+  const minCartAmount = useSelector((state: RootState) => state.app.minCartAmount);
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const initialLayout = { width: Dimensions.get('window').width };
@@ -478,6 +483,10 @@ const HomeScreen = () => {
               response.data,
             );
           }
+        }
+
+        if (response.data?.min_cart_amount !== undefined) {
+          dispatch(setMinCartAmount(parseFloat(response.data.min_cart_amount)));
         }
 
         const transformed = transformHomeData(response.data);
@@ -1261,7 +1270,7 @@ const HomeScreen = () => {
       {/* <View style={styles.headerLine}>
         <Typography
           variant={TypographyVariant.PXSMALL_MEDIUM}
-          text="MINIMUM ORDER VALUE: €20 7-DAY RETURN MINIMUM ORDER VALUE: €20"
+          text={`MINIMUM ORDER VALUE: €${minCartAmount} 7-DAY RETURN MINIMUM ORDER VALUE: €${minCartAmount}`}
           customTextStyles={styles.headerLineText}
         />
       </View> */}
