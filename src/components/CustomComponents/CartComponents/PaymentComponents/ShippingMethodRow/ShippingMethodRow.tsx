@@ -20,6 +20,11 @@ interface ShippingMethodRowProps {
   imageUrl?: string;
 }
 
+const toHttps = (url: string): string => {
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
+
 const ShippingMethodRow: React.FC<ShippingMethodRowProps> = ({
   isSelected,
   onPress,
@@ -36,7 +41,7 @@ const ShippingMethodRow: React.FC<ShippingMethodRowProps> = ({
       <View style={styles.leftSection}>
         {imageUrl ? (
           <Image
-            source={{ uri: imageUrl }}
+            source={{ uri: toHttps(imageUrl) }}
             style={[styles.shippingImage]}
           />
         ) : name === 'Loginext' ? (
