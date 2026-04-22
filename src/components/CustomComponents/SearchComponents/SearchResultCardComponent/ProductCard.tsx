@@ -1,8 +1,8 @@
-import React, {memo, useState, useRef, useEffect} from 'react';
-import {Image, TouchableOpacity, View} from 'react-native';
+import React, { memo, useState, useRef, useEffect } from 'react';
+import { Image, TouchableOpacity, View } from 'react-native';
 import HeartIcon from '../../../../assets/icons/HeartIcon';
 import StarRating from '../../../../assets/icons/StarRating';
-import {Button} from '../../../MainComponents/Button/Button';
+import { Button } from '../../../MainComponents/Button/Button';
 import {
   ButtonSize,
   ButtonState,
@@ -10,17 +10,17 @@ import {
   ButtonVariant,
 } from '../../../MainComponents/Button/Button.types';
 import ColorPalette from '../../../../config/ColorPalette';
-import {getScreenHeight, getScreenWidth} from '../../../../helpers/screenSize';
-import {Badge} from '../../../MainComponents/Badges/Badge';
+import { getScreenHeight, getScreenWidth } from '../../../../helpers/screenSize';
+import { Badge } from '../../../MainComponents/Badges/Badge';
 import {
   BadgeType,
   BadgeVariant,
 } from '../../../MainComponents/Badges/Badge.types';
-import {useCartQuantity} from '../../../../hooks/useCartQuantity';
-import {Typography} from '../../../MainComponents/Typography/Typography';
-import {TypographyVariant} from '../../../MainComponents/Typography/Typography.types';
-import {styles} from './ProductCard.styles';
-import {ProductCardProps} from './ProductCard.types';
+import { useCartQuantity } from '../../../../hooks/useCartQuantity';
+import { Typography } from '../../../MainComponents/Typography/Typography';
+import { TypographyVariant } from '../../../MainComponents/Typography/Typography.types';
+import { styles } from './ProductCard.styles';
+import { ProductCardProps } from './ProductCard.types';
 
 /**
  * ProductCard: A reusable card component for displaying product information
@@ -96,7 +96,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   // Memoized components to prevent unnecessary re-renders
   const ProductImage = () =>
     typeof imageSource === 'string' ? (
-      <Image source={{uri: imageSource}} style={styles.image} />
+      <Image source={{ uri: imageSource }} style={styles.image} />
     ) : (
       <Image source={imageSource} style={styles.image} />
     );
@@ -124,20 +124,22 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const Rating = () => (
     <View style={styles.ratingContainer}>
       <Typography
-        text={rating ? rating.toFixed(1) : '0.0'}
+        text={(rating && rating > 0) ? rating.toFixed(1) : 'No Ratings'}
         variant={TypographyVariant.LSMALL_MEDIUM}
-        customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+        customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
       />
-      <StarRating
-        style={undefined}
-        size={12}
-        color={ColorPalette.RATING_COLOR_ICON as string}
-      />
+      {(rating && rating > 0) ? (
+        <StarRating
+          style={undefined}
+          size={12}
+          color={ColorPalette.RATING_COLOR_ICON as string}
+        />
+      ) : null}
       {reviewCount ? (
         <Typography
           variant={TypographyVariant.LXSMALL_MEDIUM}
           text={`(${reviewCount})`}
-          customTextStyles={{color: ColorPalette.TEXT_GREY_100}}
+          customTextStyles={{ color: ColorPalette.TEXT_GREY_100 }}
         />
       ) : null}
     </View>
@@ -158,7 +160,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       <Typography
         variant={priceVariant}
         text={`€${discountedPrice.toFixed(2)}`}
-        customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+        customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
       />
     </View>
   );
@@ -172,7 +174,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <Typography
           text="-"
           variant={TypographyVariant.LSMALL_SEMIBOLD}
-          customTextStyles={{color: ColorPalette.WHITE}}
+          customTextStyles={{ color: ColorPalette.WHITE }}
         />
       </TouchableOpacity>
       <Typography
@@ -187,7 +189,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <Typography
           text="+"
           variant={TypographyVariant.LSMALL_SEMIBOLD}
-          customTextStyles={{color: ColorPalette.WHITE}}
+          customTextStyles={{ color: ColorPalette.WHITE }}
         />
       </TouchableOpacity>
     </View>
@@ -216,7 +218,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               text="SOLD OUT"
               variant={BadgeVariant.FILLED}
               type={BadgeType.DANGER}
-              customContainerStyle={{backgroundColor: ColorPalette.RED_100}}
+              customContainerStyle={{ backgroundColor: ColorPalette.RED_100 }}
             />
           </View>
         )}
@@ -243,18 +245,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
           {stock !== undefined && stock <= 0 ? (
             <Button
               text="Out of Stock"
-              onPress={() => {}}
+              onPress={() => { }}
               size={ButtonSize.SMALL}
               variant={ButtonVariant.PRIMARY}
               type={ButtonType.OUTLINED}
               state={ButtonState.DISABLED}
               customStyles={[
                 styles.customButton,
-                {borderColor: ColorPalette.TEXT_GREY_100},
+                { borderColor: ColorPalette.TEXT_GREY_100 },
               ]}
               customTextStyles={[
                 styles.customText,
-                {color: ColorPalette.TEXT_GREY_100},
+                { color: ColorPalette.TEXT_GREY_100 },
               ]}
               useGradient={false}
             />

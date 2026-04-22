@@ -150,15 +150,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const Rating = () => (
     <View style={styles.ratingContainer}>
       <Typography
-        text={rating ? rating.toFixed(1) : '0.0'}
+        text={(rating && rating > 0) ? rating.toFixed(1) : 'No Ratings'}
         variant={TypographyVariant.LSMALL_MEDIUM}
         customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
       />
-      <StarRating
-        style={undefined}
-        size={12}
-        color={ColorPalette.RATING_COLOR_ICON as string}
-      />
+      {(rating && rating > 0) ? (
+        <StarRating
+          style={undefined}
+          size={12}
+          color={ColorPalette.RATING_COLOR_ICON as string}
+        />
+      ) : null}
       {reviewCount ? (
         <Typography
           variant={TypographyVariant.LXSMALL_MEDIUM}

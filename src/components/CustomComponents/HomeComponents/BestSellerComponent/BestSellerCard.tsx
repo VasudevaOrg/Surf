@@ -231,15 +231,17 @@ const BestSellerCard: React.FC<BestSellerCardProps> = ({
         {!isProductDetail && (
           <View style={styles.ratingContainer}>
             <Typography
-              text={rating.toString()}
+              text={(rating && rating > 0) ? rating.toString() : 'No Ratings'}
               variant={TypographyVariant.LSMALL_MEDIUM}
               customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
             />
-            <StarRating
-              style={undefined}
-              size={12}
-              color={ColorPalette.RATING_COLOR_ICON as string}
-            />
+            {(rating && rating > 0) ? (
+              <StarRating
+                style={undefined}
+                size={12}
+                color={ColorPalette.RATING_COLOR_ICON as string}
+              />
+            ) : null}
           </View>
         )}
       </View>
@@ -281,15 +283,17 @@ const BestSellerCard: React.FC<BestSellerCardProps> = ({
           {isProductDetail && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Typography
-                text={rating.toString()}
+                text={(rating && rating > 0) ? rating.toString() : 'No Ratings'}
                 variant={TypographyVariant.LSMALL_MEDIUM}
                 customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
               />
-              <StarRating
-                style={undefined}
-                size={12}
-                color={ColorPalette.RATING_COLOR as string} // Yellow color as requested
-              />
+              {(rating && rating > 0) ? (
+                <StarRating
+                  style={undefined}
+                  size={12}
+                  color={ColorPalette.RATING_COLOR as string} // Yellow color as requested
+                />
+              ) : null}
             </View>
           )}
         </View>

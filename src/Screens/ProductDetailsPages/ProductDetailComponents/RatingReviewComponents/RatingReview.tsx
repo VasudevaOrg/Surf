@@ -100,18 +100,26 @@ const RatingReview: React.FC<RatingReviewProps> = ({
 
       <View style={styles.contentContainer}>
         <View style={styles.ratingContainer}>
-          <View style={styles.ratingNumberContainer}>
+          {(rating && rating > 0) ? (
+            <View style={styles.ratingNumberContainer}>
+              <Typography
+                text={rating?.toFixed(1)}
+                variant={TypographyVariant.H1_SEMIBOLD}
+                customTextStyles={{ color: ColorPalette.GREEN_200 as any }}
+              />
+              <StarRating
+                color={ColorPalette.GREEN_200 as string}
+                size={20}
+                style={undefined}
+              />
+            </View>
+          ) : (
             <Typography
-              text={rating?.toFixed(1) || '0.0'}
-              variant={TypographyVariant.H1_SEMIBOLD}
-              customTextStyles={{ color: ColorPalette.GREEN_200 as any }}
+              text="No Ratings"
+              variant={TypographyVariant.H5_BOLD}
+              customTextStyles={{ color: ColorPalette.TEXT_GREY_100, marginBottom: 8 }}
             />
-            <StarRating
-              color={ColorPalette.GREEN_200 as string}
-              size={20}
-              style={undefined}
-            />
-          </View>
+          )}
           <View style={styles.ratingInfoContainer}>
             <Typography
               text={`${totalRatings} Ratings`}
@@ -146,7 +154,7 @@ const RatingReview: React.FC<RatingReviewProps> = ({
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </View >
   );
 };
 

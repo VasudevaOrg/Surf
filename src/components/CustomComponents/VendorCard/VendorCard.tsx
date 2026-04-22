@@ -117,10 +117,18 @@ export const VendorCard: React.FC<VendorCardProps> = ({
               alignItems: 'center',
               gap: getScreenWidth(1),
             }}>
-            <StarRating style={undefined} size={20} />
-            <Typography variant={TypographyVariant.LMEDIUM_REGULAR}>
-              {item?.rating}
-            </Typography>
+            {parseFloat(item?.rating) > 0 ? (
+              <>
+                <StarRating style={undefined} size={20} />
+                <Typography variant={TypographyVariant.LMEDIUM_REGULAR}>
+                  {item?.rating}
+                </Typography>
+              </>
+            ) : (
+              <Typography variant={TypographyVariant.LMEDIUM_REGULAR}>
+                No Ratings
+              </Typography>
+            )}
             <Typography
               variant={TypographyVariant.LMEDIUM_REGULAR}
               customTextStyles={{

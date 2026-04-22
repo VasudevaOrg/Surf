@@ -36,6 +36,7 @@ import {
   Button,
   ButtonSize,
   ButtonType,
+  ButtonState,
   ButtonVariant,
 } from '../../../../components/MainComponents/Button';
 
@@ -63,6 +64,8 @@ const VendorDetailsScreen: React.FC<VendorDetailsScreenProps> = ({ route }) => {
   );
   const itemsPerPage = 20;
   const [page, setPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [isLoadMoreLoading, setIsLoadMoreLoading] = useState(false);
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
   const [productCartIds, setProductCartIds] = useState<Record<string, string>>({});
 
@@ -216,114 +219,148 @@ const VendorDetailsScreen: React.FC<VendorDetailsScreenProps> = ({ route }) => {
     fetchNtFilters();
   }, [userId]);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
+  const fetchProducts = useCallback(async (isLoadMore = false) => {
+    try {
+      if (isLoadMore) {
+        setIsLoadMoreLoading(true);
+      } else {
         setProductsLoading(true);
+      }
 
-        let queryParams = `currency_code=EUR&lang_code=en&user_id=${userId || ''
-          }&page=${page}&items_per_page=${itemsPerPage}&sort_by=${selectedSortBy}&sort_order=${selectedSortOrder}`;
+      const currentPage = isLoadMore ? page + 1 : 1;
 
-        // Construct features_hash based on activeFilters and apiFilters
-        const hashParts: string[] = [];
-        Object.entries(activeFilters).forEach(
-          ([sectionName, selectedValues]) => {
-            if (
-              !selectedValues ||
-              selectedValues.length === 0 ||
-              sectionName === 'Category'
-            )
-              return;
-            const filterDoc = apiFilters.find(
-              (f: any) =>
-                (f.description || f.filter || f.feature_description) ===
-                sectionName,
-            );
-            if (!filterDoc) return;
+      let queryParams = `currency_code=EUR&lang_code=en&user_id=${userId || ''
+        }&page=${currentPage}&items_per_page=${itemsPerPage}&sort_by=${selectedSortBy}&sort_order=${selectedSortOrder}`;
 
-            const fid = filterDoc.filter_id || filterDoc.feature_id;
-            if (filterDoc.range) {
-              const min = selectedValues[0] || filterDoc.range.min;
-              const max = selectedValues[1] || filterDoc.range.max;
-              const currency = filterDoc.range.currency_code || 'EUR';
-              hashParts.push(`${fid}-${min}-${max}-${currency}`);
-            } else {
-              const variantHashes: string[] = [];
-              selectedValues.forEach((val: string) => {
-                const variant = (
-                  filterDoc.variants || Object.values(filterDoc.variants || {})
-                ).find((v: any) => (v.variant || v.name) === val);
-                if (variant) {
-                  variantHashes.push(variant.variant_id);
-                }
-              });
-              if (variantHashes.length > 0) {
-                hashParts.push(`${fid}-${variantHashes.join('-')}`);
+      // Construct features_hash based on activeFilters and apiFilters
+      const hashParts: string[] = [];
+      Object.entries(activeFilters).forEach(
+        ([sectionName, selectedValues]) => {
+          if (
+            !selectedValues ||
+            selectedValues.length === 0 ||
+            sectionName === 'Category'
+          )
+            return;
+          const filterDoc = apiFilters.find(
+            (f: any) =>
+              (f.description || f.filter || f.feature_description) ===
+              sectionName,
+          );
+          if (!filterDoc) return;
+
+          const fid = filterDoc.filter_id || filterDoc.feature_id;
+          if (filterDoc.range) {
+            const min = selectedValues[0] || filterDoc.range.min;
+            const max = selectedValues[1] || filterDoc.range.max;
+            const currency = filterDoc.range.currency_code || 'EUR';
+            hashParts.push(`${fid}-${min}-${max}-${currency}`);
+          } else {
+            const variantHashes: string[] = [];
+            selectedValues.forEach((val: string) => {
+              const variant = (
+                filterDoc.variants || Object.values(filterDoc.variants || {})
+              ).find((v: any) => (v.variant || v.name) === val);
+              if (variant) {
+                variantHashes.push(variant.variant_id);
               }
+            });
+            if (variantHashes.length > 0) {
+              hashParts.push(`${fid}-${variantHashes.join('-')}`);
             }
-          },
+          }
+        },
+      );
+
+      if (hashParts.length > 0) {
+        queryParams += `&features_hash=${hashParts.join('_')}`;
+      }
+
+      const endpoint = isVendor
+        ? `${API_ENDPOINTS.PRODUCTS_BY_COMPANY(
+          vendorId,
+          userId || '',
+        )}&${queryParams}`
+        : `${API_ENDPOINTS.PRODUCTS_BY_BRAND(
+          vendorId,
+          userId || '',
+        )}&${queryParams}`;
+
+      const response = await axios.get(endpoint);
+      console.log('--- Vendor Products API Response:', {
+        total_items: response.data?.total_items,
+        products_count: response.data?.products?.length,
+        items_per_page: itemsPerPage,
+        page: currentPage
+      });
+
+      if (response.data && response.data.sortings) {
+        setApiSortings(response.data.sortings);
+      }
+
+      if (!isLoadMore) {
+        const total = response.data?.total_items || response.data?.params?.total_items;
+        console.log('--- Detected Total Items:', total);
+        if (total) {
+          setTotalItems(parseInt(total) || 0);
+        } else if (response.data?.products?.length === itemsPerPage) {
+          // If we got exactly itemsPerPage and no total_items, assume there's at least one more page
+          setTotalItems(response.data.products.length + 1);
+          console.log('--- No total_items found, using products.length + 1 as fallback');
+        } else {
+          setTotalItems(response.data?.products?.length || 0);
+        }
+      }
+
+      if (response.data && response.data.products) {
+        const transformedProducts = response.data.products.map(
+          (item: any) => ({
+            id: item.product_id,
+            imageSource: item.image_url
+              ? { uri: toHttps(item.image_url) }
+              : item.main_pair?.detailed?.image_path
+                ? { uri: toHttps(item.main_pair.detailed.image_path) }
+                : require('../../../../assets/images/productCardDemo.png'),
+            title: decodeHTMLEntities(item.product),
+            discountedPrice: parseFloat(item.price) || 0,
+            originalPrice: parseFloat(item.list_price) || 0,
+            rating:
+              parseFloat(item.rating) ||
+              parseFloat(item.average_rating) ||
+              0,
+            reviewCount:
+              item.ratings_count ||
+              parseInt(item.product_reviews_count) ||
+              0,
+            deliveryInfo: item.nt_delivery_info || 'Delivery in 48 hours',
+            stock: parseInt(item.amount) || 0,
+          }),
         );
 
-        if (hashParts.length > 0) {
-          queryParams += `&features_hash=${hashParts.join('_')}`;
-          console.log(
-            '--- Applied Filters URL query string (Vendor Details):',
-            `features_hash=${hashParts.join('_')}`,
-          );
-        }
-
-        const endpoint = isVendor
-          ? `${API_ENDPOINTS.PRODUCTS_BY_COMPANY(
-            vendorId,
-            userId || '',
-          )}&${queryParams}`
-          : `${API_ENDPOINTS.PRODUCTS_BY_BRAND(
-            vendorId,
-            userId || '',
-          )}&${queryParams}`;
-
-        const response = await axios.get(endpoint);
-
-        if (response.data && response.data.sortings) {
-          setApiSortings(response.data.sortings);
-        }
-
-        if (response.data && response.data.products) {
-          const transformedProducts = response.data.products.map(
-            (item: any) => ({
-              id: item.product_id,
-              imageSource: item.main_pair?.detailed?.image_path
-                ? { uri: toHttps(item.main_pair.detailed.image_path) }
-                : item.image_url
-                  ? { uri: toHttps(item.image_url) }
-                  : require('../../../../assets/images/productCardDemo.png'),
-              title: decodeHTMLEntities(item.product),
-              discountedPrice: parseFloat(item.price) || 0,
-              originalPrice: parseFloat(item.list_price) || 0,
-              rating:
-                parseFloat(item.rating) ||
-                parseFloat(item.average_rating) ||
-                4.5,
-              reviewCount:
-                item.ratings_count ||
-                parseInt(item.product_reviews_count) ||
-                10,
-              deliveryInfo: item.nt_delivery_info || 'Delivery in 48 hours',
-              stock: parseInt(item.amount) || 0,
-            }),
-          );
-          setProducts(transformedProducts);
+        if (isLoadMore) {
+          setProducts(prev => [...prev, ...transformedProducts]);
+          setPage(currentPage);
+          // If we don't have a reliable totalItems, increment it to keep the button visible if we got a full page
+          const total = response.data?.total_items || response.data?.params?.total_items;
+          if (!total && transformedProducts.length === itemsPerPage) {
+            setTotalItems(prev => prev + itemsPerPage);
+          }
         } else {
-          setProducts([]);
+          setProducts(transformedProducts);
+          setPage(1);
         }
-      } catch (error) {
-        console.error('Error fetching vendor products:', error);
-      } finally {
-        setProductsLoading(false);
+      } else {
+        if (!isLoadMore) {
+          setProducts([]);
+          setTotalItems(0);
+        }
       }
-    };
-
-    fetchProducts();
+    } catch (error) {
+      console.error('Error fetching vendor products:', error);
+    } finally {
+      setProductsLoading(false);
+      setIsLoadMoreLoading(false);
+    }
   }, [
     vendorId,
     isVendor,
@@ -332,6 +369,19 @@ const VendorDetailsScreen: React.FC<VendorDetailsScreenProps> = ({ route }) => {
     selectedSortBy,
     selectedSortOrder,
     page,
+    apiFilters,
+    itemsPerPage,
+  ]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [
+    vendorId,
+    isVendor,
+    userId,
+    activeFilters,
+    selectedSortBy,
+    selectedSortOrder,
     apiFilters,
   ]);
 
@@ -453,7 +503,7 @@ const VendorDetailsScreen: React.FC<VendorDetailsScreenProps> = ({ route }) => {
                   image_url: vendorData.image_url,
                   description: vendorData.company_description,
                   products_sold: '2,076', // Placeholder
-                  rating: vendorData.average_rating || '44',
+                  rating: vendorData.average_rating || 0,
                   ratings_count: vendorData.discussion?.posts_count || 0,
                 }}
                 onPress={() => { }}
@@ -490,7 +540,7 @@ const VendorDetailsScreen: React.FC<VendorDetailsScreenProps> = ({ route }) => {
                 }}
               />
               <Typography
-                text={`Products found - ${products.length}`}
+                text={`Products found - ${totalItems}`}
                 variant={TypographyVariant.LSMALL_SEMIBOLD}
                 customTextStyles={{
                   color: ColorPalette.TEXT_GREY_50,
@@ -505,66 +555,83 @@ const VendorDetailsScreen: React.FC<VendorDetailsScreenProps> = ({ route }) => {
                 style={{ marginTop: 20 }}
               />
             ) : products.length > 0 ? (
-              <View style={styles.productsGrid}>
-                {products.map((item, index) => (
-                  <View key={item.id} style={styles.productCardWrapper}>
-                    <MemoizedProductCard
-                      id={item.id}
-                      testID={item.id}
-                      imageSource={item.imageSource}
-                      title={item.title}
-                      originalPrice={item.originalPrice}
-                      discountedPrice={item.discountedPrice}
-                      rating={item.rating}
-                      reviewCount={item.reviewCount}
-                      // deliveryInfo={item.deliveryInfo}
-                      isFavorite={favorites[item.id]}
-                      onToggleFavorite={() => toggleFavorite(item.id)}
-                      onAddToCart={() => {
-                        if (userId) {
-                          dispatch(
-                            addItemToCart({
-                              userId,
-                              productId: item.id,
-                              productDetails: {
-                                title: item.title,
-                                price: String(item.discountedPrice),
-                                display_price: `€${item.discountedPrice.toFixed(
-                                  2,
-                                )}`,
-                                image:
-                                  typeof item.imageSource === 'object'
-                                    ? item.imageSource.uri
-                                    : '',
+              <>
+                <View style={styles.productsGrid}>
+                  {products.map((item, index) => (
+                    <View key={item.id} style={styles.productCardWrapper}>
+                      <MemoizedProductCard
+                        id={item.id}
+                        testID={item.id}
+                        imageSource={item.imageSource}
+                        title={item.title}
+                        originalPrice={item.originalPrice}
+                        discountedPrice={item.discountedPrice}
+                        rating={item.rating}
+                        reviewCount={item.reviewCount}
+                        // deliveryInfo={item.deliveryInfo}
+                        isFavorite={favorites[item.id]}
+                        onToggleFavorite={() => toggleFavorite(item.id)}
+                        onAddToCart={() => {
+                          if (userId) {
+                            dispatch(
+                              addItemToCart({
+                                userId,
+                                productId: item.id,
+                                productDetails: {
+                                  title: item.title,
+                                  price: String(item.discountedPrice),
+                                  display_price: `€${item.discountedPrice.toFixed(
+                                    2,
+                                  )}`,
+                                  image:
+                                    typeof item.imageSource === 'object'
+                                      ? item.imageSource.uri
+                                      : '',
+                                },
+                              }),
+                            );
+                          } else {
+                            navigation.navigate('Authentication', {
+                              screen: 'WhatsAppAndEmailLogInScreen',
+                              params: {
+                                returnTo: 'VendorDetails',
+                                vendorId,
+                                vendorName,
+                                isVendor,
                               },
-                            }),
-                          );
-                        } else {
-                          navigation.navigate('Authentication', {
-                            screen: 'WhatsAppAndEmailLogInScreen',
-                            params: {
-                              returnTo: 'VendorDetails',
-                              vendorId,
-                              vendorName,
-                              isVendor,
-                            },
+                            });
+                          }
+                        }}
+                        onCardPress={() => {
+                          navigation.navigate('ProductDetail', {
+                            productId: item.id,
                           });
-                        }
-                      }}
-                      onCardPress={() => {
-                        navigation.navigate('ProductDetail', {
-                          productId: item.id,
-                        });
-                      }}
-                      buttonText={'Add'}
-                      titleVariant={TypographyVariant.LMEDIUM_SEMIBOLD}
-                      priceVariant={TypographyVariant.LMEDIUM_SEMIBOLD}
-                      onImage={true}
-                      stock={item.stock}
+                        }}
+                        buttonText={'Add'}
+                        titleVariant={TypographyVariant.LMEDIUM_SEMIBOLD}
+                        priceVariant={TypographyVariant.LMEDIUM_SEMIBOLD}
+                        onImage={true}
+                        stock={item.stock}
+                      />
+                    </View>
+                  ))}
+                </View>
+                {products.length < totalItems && (
+                  <View style={{ marginVertical: 20, alignItems: 'center' }}>
+                    <Button
+                      text={isLoadMoreLoading ? '' : 'Show More'}
+                      onPress={() => fetchProducts(true)}
+                      variant={ButtonVariant.PRIMARY}
+                      type={ButtonType.OUTLINED}
+                      size={ButtonSize.MEDIUM}
+                      state={isLoadMoreLoading ? ButtonState.DISABLED : ButtonState.DEFAULT}
+                      customStyles={{ width: 150 }}
+                      customTextStyles={{ color: ColorPalette.ROSE_PURPLE_300 }}
+                      leftIcon={isLoadMoreLoading ? () => <ActivityIndicator size="small" color={ColorPalette.ROSE_PURPLE_300} /> : undefined}
                     />
                   </View>
-                ))}
-              </View>
+                )}
+              </>
             ) : (
               <View style={{ alignItems: 'center', marginTop: 40 }}>
                 <Typography

@@ -108,8 +108,8 @@ const WishListScreen = () => {
         title: item.product,
         discountedPrice: parseFloat(item.price) || 0,
         originalPrice: parseFloat(item.list_price) || 0,
-        rating: 4.5,
-        reviewCount: 10,
+        rating: parseFloat(item.average_rating) || 0,
+        reviewCount: parseInt(item.product_reviews_count) || 0,
         deliveryInfo: 'Delivery in 48 hours',
       }));
 

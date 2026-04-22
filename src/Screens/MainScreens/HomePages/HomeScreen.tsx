@@ -289,6 +289,7 @@ const HomeScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [visibleProductsLimit, setVisibleProductsLimit] = useState(20);
 
   // Cache for storing category-specific data for instant tab switching
   const categoryDataCache = useRef<Record<string, any>>({});
@@ -995,10 +996,10 @@ const HomeScreen = () => {
       return null;
     }
 
-    // Limit to 20 items (10 rows)
-    const limit = 20;
+    // Use visibleProductsLimit for in-place "Show More"
+    const limit = visibleProductsLimit;
     const productsToShow = productsToRender.slice(0, limit);
-    const hasMore = productsToRender.length > limit;
+    const hasMoreInLocal = productsToRender.length > limit;
 
     return (
       <View style={styles.bestSellerContainer}>
@@ -1039,7 +1040,19 @@ const HomeScreen = () => {
           })}
         </View>
 
-        {hasMore && (
+        {hasMoreInLocal ? (
+          <View style={{ marginVertical: 20, alignItems: 'center' }}>
+            <Button
+              text="Show More"
+              onPress={() => setVisibleProductsLimit(prev => prev + 20)}
+              variant={ButtonVariant.PRIMARY}
+              type={ButtonType.OUTLINED}
+              size={ButtonSize.MEDIUM}
+              customStyles={{ width: 150 }}
+              customTextStyles={{ color: ColorPalette.ROSE_PURPLE_300 }}
+            />
+          </View>
+        ) : productsToRender.length > 20 && (
           <Button
             text="See All Products"
             rightIcon={ChevronIcon}

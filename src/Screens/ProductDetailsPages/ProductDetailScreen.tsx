@@ -923,7 +923,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
             </TouchableOpacity>
           )}
         </View>
-        <View style={styles.imageAllContainer}>
+        {/* <View style={styles.imageAllContainer}>
           <Typography
             text={`${similarProductsMapped.length} Similar Products`}
             variant={TypographyVariant.H6_MEDIUM}
@@ -939,7 +939,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
               contentContainerStyle={styles.flatListContentContainer}
             />
           </View>
-        </View>
+        </View> */}
         <ProductInfo
           title={product.product}
           price={parseFloat(product.price)}

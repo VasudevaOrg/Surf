@@ -24,6 +24,7 @@ import {
   Button,
   ButtonSize,
   ButtonType,
+  ButtonState,
   ButtonVariant,
 } from '../../../components/MainComponents/Button';
 import BasicSkeleton from '../../../components/MainComponents/Skeleton/BasicSkeleton';
@@ -720,14 +721,28 @@ const SearchResultScreen = ({ route }: any) => {
         console.log('Total Items API:', response.data.total_items);
 
         const fetchedProducts = response.data.products || [];
-        const totalCount = parseInt(response.data.total_items) || 0;
+        const totalCount = parseInt(response.data.total_items || response.data?.params?.total_items) || 0;
 
         if (response.data.sortings) {
           setApiSortings(response.data.sortings);
         }
 
         if (!isLoadMore) {
-          setTotalItems(totalCount);
+          if (totalCount > 0) {
+            setTotalItems(totalCount);
+          } else if (fetchedProducts.length === itemsPerPage) {
+            // Fallback if total_items is missing
+            setTotalItems(fetchedProducts.length + 1);
+          } else {
+            setTotalItems(fetchedProducts.length);
+          }
+        } else {
+          // If loading more and we don't have a reliable totalItems, update it
+          if (totalCount === 0 && fetchedProducts.length === itemsPerPage) {
+            setTotalItems(prev => prev + itemsPerPage);
+          } else if (totalCount > 0) {
+            setTotalItems(totalCount);
+          }
         }
 
         const transformedProducts = fetchedProducts.map((item: any) => ({
@@ -996,7 +1011,21 @@ const SearchResultScreen = ({ route }: any) => {
               ) : null
             }
             ListFooterComponent={
-              isMoreLoading ? (
+              products.length < totalItems ? (
+                <View style={{ marginVertical: 20, alignItems: 'center' }}>
+                  <Button
+                    text={isMoreLoading ? '' : 'Show More'}
+                    onPress={() => handleLoadMore()}
+                    variant={ButtonVariant.PRIMARY}
+                    type={ButtonType.OUTLINED}
+                    size={ButtonSize.MEDIUM}
+                    state={isMoreLoading ? ButtonState.DISABLED : ButtonState.DEFAULT}
+                    customStyles={{ width: 150 }}
+                    customTextStyles={{ color: ColorPalette.ROSE_PURPLE_300 }}
+                    leftIcon={isMoreLoading ? () => <ActivityIndicator size="small" color={ColorPalette.ROSE_PURPLE_300} /> : undefined}
+                  />
+                </View>
+              ) : isMoreLoading ? (
                 <ActivityIndicator
                   size="small"
                   color={ColorPalette.PRIMARY}
@@ -1004,8 +1033,8 @@ const SearchResultScreen = ({ route }: any) => {
                 />
               ) : null
             }
-            onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.5}
+            // onEndReached={handleLoadMore}
+            // onEndReachedThreshold={0.5}
             refreshing={loading}
             onRefresh={fetchProducts}
           />
