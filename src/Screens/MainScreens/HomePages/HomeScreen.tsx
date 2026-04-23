@@ -66,6 +66,7 @@ import {
   setSupportInfo,
   setPageIds,
   setMinCartAmount,
+  setAppConfiguration,
 } from '../../../store/slices/appSlice';
 import { addSearch } from '../../../store/slices/searchSlice';
 import { addGuestItem, addItemToCart } from '../../../store/slices/cartSlice';
@@ -122,6 +123,7 @@ import { AuthPopup } from '../../../components/CustomComponents/AuthPopUp/AuthPo
 import { showToast } from '../../../components/MainComponents/Toast/ToastHelper';
 import { ToastMessages } from '../../../components/MainComponents/Toast/ToastMessages';
 import HomeErrorState from '../../../components/CustomComponents/HomeComponents/HomeErrorState/HomeErrorState';
+import UpdateAppModal from '../../../components/CustomComponents/UpdateAppModal';
 
 const MemoizedBestSellerCard = memo(BestSellerCard);
 const MemoizedCategoryBox = memo(CategoryBox);
@@ -146,6 +148,8 @@ const HomeScreen = () => {
   const [isVoiceModalVisible, setIsVoiceModalVisible] = useState(false);
   const userId = useSelector((state: RootState) => state.auth.userId);
   const minCartAmount = useSelector((state: RootState) => state.app.minCartAmount);
+  const appConfiguration = useSelector((state: RootState) => state.app.appConfiguration);
+  const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
   const initialLayout = { width: Dimensions.get('window').width };
@@ -489,6 +493,35 @@ const HomeScreen = () => {
         if (response.data?.min_cart_amount !== undefined) {
           dispatch(setMinCartAmount(parseFloat(response.data.min_cart_amount)));
         }
+
+        let appConfig = response.data?.app_configuration;
+
+        // If not at root, check inside layout array as per user's example
+        if (!appConfig && response.data?.layout && Array.isArray(response.data.layout)) {
+          const configBlock = response.data.layout.find(
+            (b: any) => b && b.app_configuration,
+          );
+          if (configBlock) {
+            appConfig = configBlock.app_configuration;
+          }
+        }
+
+        if (appConfig) {
+          dispatch(setAppConfiguration(appConfig));
+
+          // Check for update
+          const androidVer = String(appConfig.android_version || '').trim();
+          const iosVer = String(appConfig.ios_version || '').trim();
+
+          console.log(`Update Check - OS: ${Platform.OS}, iOS Ver: "${iosVer}", Android Ver: "${androidVer}"`);
+
+          if (Platform.OS === 'android' && androidVer && androidVer !== '1') {
+            setIsUpdateModalVisible(true);
+          } else if (Platform.OS === 'ios' && iosVer && iosVer !== '1') {
+            setIsUpdateModalVisible(true);
+          }
+        }
+
 
         const transformed = transformHomeData(response.data);
 
@@ -1605,9 +1638,17 @@ const HomeScreen = () => {
           onResult={text => handleNavigateToSearchResult(text)}
         />
         <AuthPopup
-          visible={showAuthPopup}
+          visible={showAuthPopup && !isUpdateModalVisible}
           setShowAuthPopup={setShowAuthPopup}
           onClose={() => setShowAuthPopup(false)}
+        />
+        <UpdateAppModal
+          isVisible={isUpdateModalVisible}
+          updateUrl={
+            Platform.OS === 'android'
+              ? appConfiguration?.android_url || ''
+              : appConfiguration?.ios_url || ''
+          }
         />
         {/* <LoadingProgressBar isLoading={loading} /> */}
       </View>

@@ -13,6 +13,12 @@ export interface AppState {
     terms_and_conditions_page?: string;
   } | null;
   minCartAmount: number;
+  appConfiguration: {
+    android_version: string;
+    android_url: string;
+    ios_version: string;
+    ios_url: string;
+  } | null;
 }
 
 const initialState: AppState = {
@@ -23,6 +29,7 @@ const initialState: AppState = {
   supportEmail: null,
   pageIds: null,
   minCartAmount: 20,
+  appConfiguration: null,
 };
 
 const appSlice = createSlice({
@@ -51,6 +58,12 @@ const appSlice = createSlice({
     setMinCartAmount: (state, action: PayloadAction<number>) => {
       state.minCartAmount = action.payload;
     },
+    setAppConfiguration: (
+      state,
+      action: PayloadAction<AppState['appConfiguration']>,
+    ) => {
+      state.appConfiguration = action.payload;
+    },
     resetState: state => {
       state.isLoading = false;
       state.error = null;
@@ -69,6 +82,7 @@ export const {
   setSupportInfo,
   setPageIds,
   setMinCartAmount,
+  setAppConfiguration,
   resetState,
 } = appSlice.actions;
 
