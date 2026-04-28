@@ -94,6 +94,7 @@ const CartStep: React.FC<CartStepProps> = ({
             ? `€${item.original_price}`
             : undefined
         }
+        shopName={item.company_name}
         quantity={parseInt(item.amount)}
         onCardPress={() => handleCardPress(item.product_id)}
         containerStyle={{

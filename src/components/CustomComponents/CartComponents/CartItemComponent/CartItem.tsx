@@ -1,11 +1,11 @@
 import React from 'react';
-import {Image, TouchableOpacity, View, ActivityIndicator} from 'react-native';
+import { Image, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import ColorPalette from '../../../../config/ColorPalette';
-import {Typography} from '../../../MainComponents/Typography/Typography';
-import {TypographyVariant} from '../../../MainComponents/Typography/Typography.types';
-import {createBestSellerCardStyles} from './CartItem.styles';
-import {CartItemProps} from './CartItem.types';
-import {getScreenHeight, getScreenWidth} from '../../../../helpers/screenSize';
+import { Typography } from '../../../MainComponents/Typography/Typography';
+import { TypographyVariant } from '../../../MainComponents/Typography/Typography.types';
+import { createBestSellerCardStyles } from './CartItem.styles';
+import { CartItemProps } from './CartItem.types';
+import { getScreenHeight, getScreenWidth } from '../../../../helpers/screenSize';
 import DeleteIcon from '../../../../assets/icons/DeleteIcon';
 import MinusIcon from '../../../../assets/icons/MinusIcon';
 import PlusIcon from '../../../../assets/icons/PlusIcon';
@@ -22,7 +22,7 @@ const CartItem: React.FC<CartItemProps> = ({
   priceVariant = TypographyVariant.H6_BOLD,
   testID,
   strikethroughPrice,
-  shopName = 'Lato Shoes shop',
+  shopName,
   quantity = 1,
   onIncrement,
   onDecrement,
@@ -34,9 +34,9 @@ const CartItem: React.FC<CartItemProps> = ({
   const renderImage = () => {
     const fallbackImage = 'https://via.placeholder.com/150';
 
-    const getValidSource = (): {uri: string} => {
+    const getValidSource = (): { uri: string } => {
       if (typeof imageSource === 'string' && imageSource.trim() !== '') {
-        return {uri: imageSource};
+        return { uri: imageSource };
       }
       if (
         imageSource &&
@@ -45,9 +45,9 @@ const CartItem: React.FC<CartItemProps> = ({
         typeof imageSource.uri === 'string' &&
         imageSource.uri.trim() !== ''
       ) {
-        return {uri: imageSource.uri};
+        return { uri: imageSource.uri };
       }
-      return {uri: fallbackImage};
+      return { uri: fallbackImage };
     };
 
     return <Image source={getValidSource()} style={styles.image} />;
@@ -60,14 +60,14 @@ const CartItem: React.FC<CartItemProps> = ({
         justifyContent: 'space-between',
         width: '100%',
       }}>
-      <View style={{flexDirection: 'row', gap: getScreenWidth(3), flex: 1}}>
+      <View style={{ flexDirection: 'row', gap: getScreenWidth(3), flex: 1 }}>
         <View style={[styles.imageContainer, imageContainerStyle]}>
           {renderImage()}
         </View>
 
         <View
-          style={[styles.contentContainer, contentContainerStyle, {flex: 1}]}>
-          <View style={{gap: getScreenWidth(1), width: '100%'}}>
+          style={[styles.contentContainer, contentContainerStyle, { flex: 1 }]}>
+          <View style={{ gap: getScreenWidth(1), width: '100%' }}>
             <View
               style={{
                 flexDirection: 'row',
@@ -114,7 +114,7 @@ const CartItem: React.FC<CartItemProps> = ({
               alignItems: 'center',
               gap: getScreenWidth(3),
             }}>
-            <View style={{flexDirection: 'row'}}>
+            <View style={{ flexDirection: 'row' }}>
               <Typography
                 text={'Size:'}
                 variant={TypographyVariant.LMEDIUM_REGULAR}
@@ -134,7 +134,7 @@ const CartItem: React.FC<CartItemProps> = ({
                 }}
               />
             </View>
-            <View style={{flexDirection: 'row'}}>
+            <View style={{ flexDirection: 'row' }}>
               <Typography
                 text={'Color:'}
                 variant={TypographyVariant.LMEDIUM_REGULAR}
@@ -168,22 +168,20 @@ const CartItem: React.FC<CartItemProps> = ({
                 text={
                   typeof price === 'string'
                     ? price
-                    : `€${
-                        typeof price === 'number' ? price.toFixed(2) : '0.00'
-                      }`
+                    : `€${typeof price === 'number' ? price.toFixed(2) : '0.00'
+                    }`
                 }
-                customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
+                customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
               />
               {strikethroughPrice && (
                 <Typography
                   text={
                     typeof strikethroughPrice === 'string'
                       ? strikethroughPrice
-                      : `€${
-                          typeof strikethroughPrice === 'number'
-                            ? strikethroughPrice.toFixed(2)
-                            : '0.00'
-                        }`
+                      : `€${typeof strikethroughPrice === 'number'
+                        ? strikethroughPrice.toFixed(2)
+                        : '0.00'
+                      }`
                   }
                   variant={TypographyVariant.LMEDIUM_REGULAR}
                   customTextStyles={{
@@ -221,7 +219,7 @@ const CartItem: React.FC<CartItemProps> = ({
                   <Typography
                     text={quantity.toString()}
                     variant={TypographyVariant.LMEDIUM_MEDIUM}
-                    customTextStyles={{color: ColorPalette.COUNT_COLOR}}
+                    customTextStyles={{ color: ColorPalette.COUNT_COLOR }}
                   />
                   <View
                     style={{

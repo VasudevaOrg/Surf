@@ -113,13 +113,7 @@ const RatingReview: React.FC<RatingReviewProps> = ({
                 style={undefined}
               />
             </View>
-          ) : (
-            <Typography
-              text="No Ratings"
-              variant={TypographyVariant.H5_BOLD}
-              customTextStyles={{ color: ColorPalette.TEXT_GREY_100, marginBottom: 8 }}
-            />
-          )}
+          ) : null}
           <View style={styles.ratingInfoContainer}>
             <Typography
               text={`${totalRatings} Ratings`}

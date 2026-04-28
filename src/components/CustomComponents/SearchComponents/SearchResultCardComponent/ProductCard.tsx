@@ -122,27 +122,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
   );
 
   const Rating = () => (
-    <View style={styles.ratingContainer}>
-      <Typography
-        text={(rating && rating > 0) ? rating.toFixed(1) : 'No Ratings'}
-        variant={TypographyVariant.LSMALL_MEDIUM}
-        customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
-      />
-      {(rating && rating > 0) ? (
+    (rating && rating > 0) ? (
+      <View style={styles.ratingContainer}>
+        <Typography
+          text={rating.toFixed(1)}
+          variant={TypographyVariant.LSMALL_MEDIUM}
+          customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
+        />
         <StarRating
           style={undefined}
           size={12}
           color={ColorPalette.RATING_COLOR_ICON as string}
         />
-      ) : null}
-      {reviewCount ? (
-        <Typography
-          variant={TypographyVariant.LXSMALL_MEDIUM}
-          text={`(${reviewCount})`}
-          customTextStyles={{ color: ColorPalette.TEXT_GREY_100 }}
-        />
-      ) : null}
-    </View>
+        {reviewCount ? (
+          <Typography
+            variant={TypographyVariant.LXSMALL_MEDIUM}
+            text={`(${reviewCount})`}
+            customTextStyles={{ color: ColorPalette.TEXT_GREY_100 }}
+          />
+        ) : null}
+      </View>
+    ) : null
   );
 
   const PriceInfo = () => (

@@ -995,7 +995,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
             });
           }}
         />
-        <RatingReview
+        {/* <RatingReview
           rating={parseFloat(product.average_rating || '0')}
           totalRatings={parseInt(product.product_reviews_count || '0', 10)}
           totalReviews={product.product_reviews_count || 0}
@@ -1005,7 +1005,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
           average={ratingStats.average}
           poor={ratingStats.poor}
           onWriteReview={() => setIsReviewModalVisible(true)}
-        />
+        /> */}
         {/* Only show Real Images section if valid data exists. Hiding for now as it's using similarProductsMapped incorrectly */}
         {false && (
           <View style={styles.imageAllContainer}>

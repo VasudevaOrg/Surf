@@ -21,7 +21,7 @@ const SummaryItem: React.FC<SummaryItemProps> = ({
   priceVariant = TypographyVariant.H6_BOLD,
   testID,
   strikethroughPrice,
-  shopName = 'Lato Shoes shop',
+  shopName,
   onDelete,
   onNavigate,
   quantity
@@ -108,7 +108,7 @@ const SummaryItem: React.FC<SummaryItemProps> = ({
               <Typography
                 text={`  × ${quantity}`}
                 variant={TypographyVariant.LMEDIUM_REGULAR}
-                customTextStyles={{ color: ColorPalette.TEXT_GREY_100}}
+                customTextStyles={{ color: ColorPalette.TEXT_GREY_100 }}
               />
             )}
           </View>

@@ -159,20 +159,20 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
             });
           }}
         />
-        <View style={styles.ratingContainer}>
-          <Typography
-            text={(rating && rating > 0) ? rating.toString() : 'No Ratings'}
-            variant={TypographyVariant.LMEDIUM_MEDIUM}
-            customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
-          />
-          {(rating && rating > 0) ? (
+        {(rating && rating > 0) ? (
+          <View style={styles.ratingContainer}>
+            <Typography
+              text={rating.toString()}
+              variant={TypographyVariant.LMEDIUM_MEDIUM}
+              customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
+            />
             <StarRating
               style={undefined}
               size={18}
               color={ColorPalette.RATING_COLOR_ICON as string}
             />
-          ) : null}
-        </View>
+          </View>
+        ) : null}
         <View style={styles.actionsContainer}>
           <View accessibilityLabel="Add to wishlist" style={styles.mainLabel}>
             <TouchableOpacity onPress={onAddToWishlist} disabled={loading}>

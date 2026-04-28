@@ -111,33 +111,27 @@ export const VendorCard: React.FC<VendorCardProps> = ({
                 </TouchableOpacity>
               )}
           </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: getScreenWidth(1),
-            }}>
-            {parseFloat(item?.rating) > 0 ? (
-              <>
-                <StarRating style={undefined} size={20} />
-                <Typography variant={TypographyVariant.LMEDIUM_REGULAR}>
-                  {item?.rating}
-                </Typography>
-              </>
-            ) : (
-              <Typography variant={TypographyVariant.LMEDIUM_REGULAR}>
-                No Ratings
-              </Typography>
-            )}
-            <Typography
-              variant={TypographyVariant.LMEDIUM_REGULAR}
-              customTextStyles={{
-                fontSize: 12,
-                color: ColorPalette.TEXT_GREY_200,
+          {parseFloat(item?.rating) > 0 ? (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: getScreenWidth(1),
               }}>
-              {`(${item?.ratings_count} ratings)`}
-            </Typography>
-          </View>
+              <StarRating style={undefined} size={20} />
+              <Typography variant={TypographyVariant.LMEDIUM_REGULAR}>
+                {item?.rating}
+              </Typography>
+              <Typography
+                variant={TypographyVariant.LMEDIUM_REGULAR}
+                customTextStyles={{
+                  fontSize: 12,
+                  color: ColorPalette.TEXT_GREY_200,
+                }}>
+                {`(${item?.ratings_count || 0} ratings)`}
+              </Typography>
+            </View>
+          ) : null}
         </View>
       </View>
 

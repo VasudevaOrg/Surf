@@ -21,13 +21,13 @@ import {
 import ScreenWrapper from '../../ScreenWrapper/ScreenWrapper';
 
 const OrderCancelled = ({ route, navigation }) => {
-  const { orderId, status } = route.params || {};
+  const { orderId, status, shopName, order_details, order_info } = route.params || {};
 
   // Dummy data mirroring the design
   const orderData = {
     image: require('../../../../assets/images/demo.png'),
     title: 'Men premium blue shoes',
-    shopName: 'Lato Shoes shop',
+    shopName: shopName || order_details?.company || order_info?.company || '',
     status: status || 'Shipped', // Use passed status or fallback
     statusColor: (status === 'Cancelled' ? '#FB3748' : '#6C84FE') || '#6C84FE', // Red for Cancelled, Blue for Shipped
   };

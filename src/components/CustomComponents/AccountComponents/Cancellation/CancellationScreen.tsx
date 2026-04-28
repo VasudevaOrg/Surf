@@ -30,13 +30,13 @@ import {
 import ScreenWrapper from '../../ScreenWrapper/ScreenWrapper';
 
 const CancellationScreen = ({ route, navigation }) => {
-  const { orderId, status } = route.params || {};
+  const { orderId, status, shopName, order_details, order_info } = route.params || {};
 
   // Dummy data mirroring the design
   const orderData = {
     image: require('../../../../assets/images/demo.png'),
     title: 'Men premium blue shoes',
-    shopName: 'Lato Shoes shop',
+    shopName: shopName || order_details?.company || order_info?.company || '',
     price: '$215.50',
     oldPrice: '$98.99',
     date: '18 Jul 2025',

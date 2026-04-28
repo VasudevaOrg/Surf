@@ -228,22 +228,20 @@ const BestSellerCard: React.FC<BestSellerCardProps> = ({
           />
         </TouchableOpacity>
         {/* Hide rating on image if isProductDetail (shown next to price instead) or strict check */}
-        {!isProductDetail && (
+        {!isProductDetail && rating && rating > 0 ? (
           <View style={styles.ratingContainer}>
             <Typography
-              text={(rating && rating > 0) ? rating.toString() : 'No Ratings'}
+              text={rating.toString()}
               variant={TypographyVariant.LSMALL_MEDIUM}
               customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
             />
-            {(rating && rating > 0) ? (
-              <StarRating
-                style={undefined}
-                size={12}
-                color={ColorPalette.RATING_COLOR_ICON as string}
-              />
-            ) : null}
+            <StarRating
+              style={undefined}
+              size={12}
+              color={ColorPalette.RATING_COLOR_ICON as string}
+            />
           </View>
-        )}
+        ) : null}
       </View>
 
       <View style={[styles.contentContainer, contentContainerStyle]}>
@@ -280,22 +278,20 @@ const BestSellerCard: React.FC<BestSellerCardProps> = ({
               />
             )}
           </View>
-          {isProductDetail && (
+          {isProductDetail && rating && rating > 0 ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Typography
-                text={(rating && rating > 0) ? rating.toString() : 'No Ratings'}
+                text={rating.toString()}
                 variant={TypographyVariant.LSMALL_MEDIUM}
                 customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
               />
-              {(rating && rating > 0) ? (
-                <StarRating
-                  style={undefined}
-                  size={12}
-                  color={ColorPalette.RATING_COLOR as string} // Yellow color as requested
-                />
-              ) : null}
+              <StarRating
+                style={undefined}
+                size={12}
+                color={ColorPalette.RATING_COLOR as string} // Yellow color as requested
+              />
             </View>
-          )}
+          ) : null}
         </View>
 
         <View style={styles.buttonContainer}>
