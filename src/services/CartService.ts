@@ -238,6 +238,7 @@ export const placeOrder = async (
   showProfilesOnCheckout: boolean = true,
   buyNowProductId?: string | number,
   couponCodeObj?: any,
+  ntPaymentType?: string,
 ) => {
   try {
     const url = API_ENDPOINTS.NT_PLACE_ORDER;
@@ -253,6 +254,9 @@ export const placeOrder = async (
     }
     if (couponCodeObj) {
       payload.coupon_code = couponCodeObj;
+    }
+    if (ntPaymentType) {
+      payload.nt_payment_type = ntPaymentType;
     }
 
     console.log('--- API Triggered: placeOrder ---');

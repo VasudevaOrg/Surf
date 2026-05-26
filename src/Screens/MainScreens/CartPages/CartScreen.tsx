@@ -523,6 +523,7 @@ const CartScreen = () => {
       console.log('Shipping ID:', shippingId);
       console.log('Payment ID:', paymentId);
       console.log('Is Buy Now:', isBuyNowMode);
+      console.log('Payment Type (nt_payment_type):', selectedPaymentMethod?.selected_type);
       console.log('------------------------------------');
 
       const showProfiles = true; // Always true for logged-in users to ensure order placement
@@ -533,6 +534,7 @@ const CartScreen = () => {
         showProfiles,
         isBuyNowMode ? buyNowProduct?.product_id : undefined,
         checkoutData?.cart?.coupons,
+        selectedPaymentMethod?.selected_type,
       );
 
       if (result.success) {

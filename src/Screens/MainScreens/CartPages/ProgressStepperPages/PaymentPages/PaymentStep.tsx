@@ -49,6 +49,11 @@ interface PaymentStepProps {
   isLoading?: boolean;
 }
 
+const toHttps = (url: string): string => {
+  if (!url) return '';
+  return url.replace(/^http:\/\//i, 'https://');
+};
+
 const PaymentStep: React.FC<PaymentStepProps> = ({
   selectedShippingMethod,
   onShippingSelected,
@@ -66,6 +71,44 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
   const [expiryDate, setExpiryDate] = useState('');
   const [securityCode, setSecurityCode] = useState('');
   const [sameAsShipping, setSameAsShipping] = useState(false);
+
+  // Flat-map payment methods if they have sub-types (e.g. types)
+  const paymentMethodsToRender = React.useMemo(() => {
+    const list: any[] = [];
+    if (cartData?.payment_methods?.length) {
+      cartData.payment_methods.forEach((method: any) => {
+        if (method.types && Array.isArray(method.types) && method.types.length > 0) {
+          method.types.forEach((typeObj: any) => {
+            list.push({
+              ...method,
+              payment: typeObj.payment,
+              selected_type: typeObj.type,
+              image: typeObj.image || method.image,
+              unique_key: `${method.payment_id}_${typeObj.type}`,
+            });
+          });
+        } else {
+          list.push({
+            ...method,
+            unique_key: method.payment_id,
+          });
+        }
+      });
+    }
+    return list;
+  }, [cartData]);
+
+  useEffect(() => {
+    if (selectedPaymentMethod && !selectedPaymentMethod.selected_type) {
+      // Find the first flat method that matches this payment_id
+      const matchingFlatMethod = paymentMethodsToRender.find(
+        (m: any) => m.payment_id === selectedPaymentMethod.payment_id
+      );
+      if (matchingFlatMethod) {
+        onPaymentSelected?.(matchingFlatMethod);
+      }
+    }
+  }, [selectedPaymentMethod, paymentMethodsToRender, onPaymentSelected]);
 
   const formatCurrency = (amount: any) => {
     if (amount === undefined || amount === null) return '€0.00';
@@ -185,32 +228,42 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
         </View>
 
         <View style={styles.radioContainer}>
-          {checkoutData?.payment_methods?.length ? (
-            checkoutData.payment_methods.map((method: any) => (
-              <PaymentMethodRow
-                key={method.payment_id}
-                isSelected={
-                  selectedPaymentMethod?.payment_id === method.payment_id
-                }
-                onPress={() => handlePaymentSelection(method)}
-                imageSource={method.image ? { uri: method.image } : undefined}
-                iconComponent={!method.image ? getPaymentIcon(method) : undefined}>
-                <View style={styles.paymentLabelContainer}>
-                  <Typography
-                    text={method.payment}
-                    variant={TypographyVariant.LMEDIUM_MEDIUM}
-                    customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
-                  />
-                  {method.description ? (
+          {paymentMethodsToRender.length ? (
+            paymentMethodsToRender.map((method: any) => {
+              const isSelected =
+                selectedPaymentMethod?.payment_id === method.payment_id &&
+                (method.selected_type
+                  ? selectedPaymentMethod?.selected_type === method.selected_type
+                  : true);
+
+              return (
+                <PaymentMethodRow
+                  key={method.unique_key}
+                  isSelected={isSelected}
+                  onPress={() => handlePaymentSelection(method)}
+                  imageSource={
+  method.image
+    ? { uri: toHttps(method.image) }
+    : 'https://via.placeholder.com/150'
+}
+                  iconComponent={!method.image ? getPaymentIcon(method) : undefined}>
+                  <View style={styles.paymentLabelContainer}>
                     <Typography
-                      text={method.description}
-                      variant={TypographyVariant.PSMALL_REGULAR}
-                      customTextStyles={{ color: ColorPalette.TEXT_GREY_300 }}
+                      text={method.payment}
+                      variant={TypographyVariant.LMEDIUM_MEDIUM}
+                      customTextStyles={{color: ColorPalette.TEXT_GREY_500}}
                     />
-                  ) : null}
-                </View>
-              </PaymentMethodRow>
-            ))
+                  {method.description ? (
+                      <Typography
+                        text={method.description}
+                        variant={TypographyVariant.PSMALL_REGULAR}
+                        customTextStyles={{color: ColorPalette.TEXT_GREY_300}}
+                      />
+                    ) : null}
+                  </View>
+                </PaymentMethodRow>
+              );
+            })
           ) : (
             <Typography
               text="No payment methods available"
