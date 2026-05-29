@@ -52,6 +52,7 @@ import {
   updateCartQuantityThunk,
   removeItemFromCart,
   clearCart,
+  clearCartThunk,
   restoreSavedCart,
   endBuyNowSession,
 } from '../../../store/slices/cartSlice';
@@ -583,7 +584,11 @@ const CartScreen = () => {
 
         // COD or Success without redirect
         if (orderId && orderId !== '0' && orderId !== 0) {
-          dispatch(clearCart());
+          if (userId) {
+            dispatch(clearCartThunk(userId));
+          } else {
+            dispatch(clearCart());
+          }
           // Navigate to ConfirmOrder with real API data
           navigation.navigate('ConfirmOrder', {
             orderData: result.data,
@@ -1129,8 +1134,12 @@ const CartScreen = () => {
           // Clear temporary UI states
           const finalCheckoutData = checkoutData; // Snap before clear
 
-          // Explicitly clear cart locally on success to avoid "memory" issues
-          dispatch(clearCart());
+          // Explicitly clear cart on success
+          if (userId) {
+            dispatch(clearCartThunk(userId));
+          } else {
+            dispatch(clearCart());
+          }
 
           // HEAL: Wipe local checkout session data to avoid stale data on next visit
           setCheckoutData(null);
