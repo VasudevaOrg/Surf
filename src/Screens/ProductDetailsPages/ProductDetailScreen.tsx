@@ -1180,7 +1180,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
             withShadow={parseInt(product?.amount || '0') > 0}
           />
         )}
-        <Button
+        {/* <Button
           text="Buy Now"
           leftIcon={ChevronIcon}
           onPress={handleBuyNow}
@@ -1206,7 +1206,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
           iconSize={14}
           iconColor={ColorPalette.WHITE as any}
           withShadow={parseInt(product?.amount || '0') > 0}
-        />
+        /> */}
       </View>
 
       <FullScreenImageViewer
