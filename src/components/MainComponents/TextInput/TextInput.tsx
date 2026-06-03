@@ -4,6 +4,7 @@ import {
   Image,
   LayoutChangeEvent,
   Pressable,
+  Text,
   TextInput as RNTextInput,
   TouchableOpacity,
   View,
@@ -17,6 +18,37 @@ import {createStyles} from './TextInput.styles';
 import {TextInputProps} from './TextInput.types';
 import {validateInput} from './TextInput.utils';
 import ArrowDownIcon from '../../../assets/icons/ArrowDownIcon';
+
+const getCountryCodeFromEmoji = (emoji: string): string => {
+  if (!emoji) {
+    return '';
+  }
+  const codePoints = Array.from(emoji).map(char => char.codePointAt(0));
+  const offset = 127397;
+  const chars = codePoints
+    .map(cp => {
+      if (cp && cp >= 127462 && cp <= 127487) {
+        return String.fromCharCode(cp - offset);
+      }
+      return '';
+    })
+    .join('');
+  return chars.toLowerCase();
+};
+
+const getFlagSource = (countryFlag: string) => {
+  if (!countryFlag) {
+    return null;
+  }
+  if (countryFlag.startsWith('http')) {
+    return {uri: countryFlag};
+  }
+  const isoCode = getCountryCodeFromEmoji(countryFlag);
+  if (isoCode) {
+    return {uri: `https://flagcdn.com/w80/${isoCode}.png`};
+  }
+  return null;
+};
 
 const AnimatedTextInput: React.FC<TextInputProps> = ({
   label,
@@ -203,17 +235,20 @@ const AnimatedTextInput: React.FC<TextInputProps> = ({
             disabled={!onCountryPress}>
             {countryFlag && (
               <>
-                {countryFlag.startsWith('http') ? (
+                {getFlagSource(countryFlag) ? (
                   <Image
-                    source={{uri: countryFlag}}
+                    source={getFlagSource(countryFlag) as any}
                     style={styles.countryFlag}
                     resizeMode="contain"
                   />
                 ) : (
-                  <Typography
-                    variant={TypographyVariant.PMEDIUM_BOLD}
-                    text={countryFlag}
-                  />
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      color: ColorPalette.BLACK,
+                    }}>
+                    {countryFlag}
+                  </Text>
                 )}
 
                 <ArrowDownIcon style={styles.dropdownSymbol} />
@@ -323,7 +358,9 @@ const AnimatedTextInput: React.FC<TextInputProps> = ({
 
   // Show placeholder text if enabled
   const getPlaceholder = () => {
-    if (!showPlaceholder) return '';
+    if (!showPlaceholder) {
+      return '';
+    }
     return placeholder || '';
   };
 

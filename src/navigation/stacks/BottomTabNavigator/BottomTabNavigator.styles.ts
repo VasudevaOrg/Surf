@@ -1,10 +1,5 @@
 import {StyleSheet} from 'react-native';
 import ColorPalette from '../../../config/ColorPalette';
-import {
-  getFigmaDimension,
-  getScreenHeight,
-  getScreenWidth,
-} from '../../../helpers/screenSize';
 
 export const styles = StyleSheet.create({
   tabBarWrapper: {
@@ -24,19 +19,19 @@ export const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: 'white',
-    paddingTop: getScreenHeight(2),
-    paddingBottom: getScreenHeight(2),
+    paddingTop: 10,
+    paddingBottom: 10,
     width: '100%',
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: getFigmaDimension(4),
+    gap: 4,
   },
   tabText: {
-    marginTop: getScreenHeight(0.5),
-    fontSize: getScreenHeight(1.4),
+    marginTop: 4,
+    fontSize: 11,
   },
   focusedTabText: {
     color: ColorPalette.PURPLE_300,
@@ -46,12 +41,13 @@ export const styles = StyleSheet.create({
   },
   badgeOverlay: {
     position: 'absolute',
-    top: -getScreenHeight(0.5),
-    right: -getScreenWidth(2),
+    top: -4,
+    right: -8,
     zIndex: 10,
   },
   badge: {
     paddingHorizontal: 0,
+    paddingVertical: 0,
     minWidth: 20,
     height: 20,
     borderRadius: 10,

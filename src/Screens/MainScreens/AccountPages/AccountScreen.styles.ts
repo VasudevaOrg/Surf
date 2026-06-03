@@ -29,10 +29,10 @@ export const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-    width: getScreenWidth(16),
-    height: getScreenHeight(7.5),
+    width: 60,
+    height: 60,
     backgroundColor: ColorPalette.WelcomeBack,
-    borderRadius: Spacing.XXXLarge,
+    borderRadius: 30,
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',

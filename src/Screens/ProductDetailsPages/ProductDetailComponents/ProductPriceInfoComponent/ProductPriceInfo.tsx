@@ -54,9 +54,8 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             variant={TypographyVariant.H6_SEMIBOLD}
             customTextStyles={{
               color: ColorPalette.TEXT_GREY_500,
-              flexShrink: 1,
+              flex: 1,
               flexWrap: 'wrap',
-              width: getScreenWidth(56),
             }}
             numberOfLines={2}
           />

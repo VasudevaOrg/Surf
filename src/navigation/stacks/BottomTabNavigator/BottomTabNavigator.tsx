@@ -1,14 +1,14 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import React, { useRef, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../store';
-import { Badge } from '../../../components/MainComponents/Badges/Badge';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import React, {useRef, useEffect} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {RootState} from '../../../store';
+import {Badge} from '../../../components/MainComponents/Badges/Badge';
 import {
   BadgeType,
   BadgeVariant,
 } from '../../../components/MainComponents/Badges/Badge.types';
-import { toggleSurfy } from '../../../store/slices/surfySlice';
-import { Animated, TouchableOpacity, View, StatusBar } from 'react-native';
+import {toggleSurfy} from '../../../store/slices/surfySlice';
+import {Animated, TouchableOpacity, View, StatusBar} from 'react-native';
 import {
   HomeIcon,
   ClickedHomeIcon,
@@ -21,20 +21,21 @@ import {
   CartIcon,
   ClickedCartIcon,
 } from '../../../assets/icons/BottomNavIcons';
-import { Typography } from '../../../components/MainComponents/Typography/Typography';
-import { TypographyVariant } from '../../../components/MainComponents/Typography/Typography.types';
+import {Typography} from '../../../components/MainComponents/Typography/Typography';
+import {TypographyVariant} from '../../../components/MainComponents/Typography/Typography.types';
 import ColorPalette from '../../../config/ColorPalette';
-import { getScreenWidth } from '../../../helpers/screenSize';
-import { styles } from './BottomTabNavigator.styles';
+import {getScreenWidth} from '../../../helpers/screenSize';
+import {styles} from './BottomTabNavigator.styles';
 import HomeScreen from '../../../Screens/MainScreens/HomePages/HomeScreen';
 import CategoriesScreen from '../../../Screens/MainScreens/CategoriesPages/CategoriesScreen';
 import AccountScreen from '../../../Screens/MainScreens/AccountPages/AccountScreen';
-import { CartNavigator } from '../CartNavigator';
-import { SearchNavigator } from '../SearchNavigator';
+import {CartNavigator} from '../CartNavigator';
+import {SearchNavigator} from '../SearchNavigator';
 import SurfyChatButton from '../../../components/CustomComponents/SurfyChat/SurfyChatButton';
 import SurfyChatModal from '../../../components/CustomComponents/SurfyChat/SurfyChatModal';
 
-import { ScrollContext } from './ScrollContext';
+import {ScrollContext} from './ScrollContext';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator();
 
@@ -50,7 +51,7 @@ const TAB_CONFIG = {
     icon: SearchIcon,
     activeIcon: ClickedSearchIcon,
     title: 'Search',
-    options: { unmountOnBlur: true },
+    options: {unmountOnBlur: true},
   },
   Categories: {
     component: CategoriesScreen,
@@ -86,21 +87,17 @@ function AnimatedTabBarIcon({
   return (
     <Animated.View
       style={{
-        transform: [{ scale: scaleAnim }],
+        transform: [{scale: scaleAnim}],
       }}>
       {isFocused ? (
         <IconComponent
           primaryColor={ColorPalette.PURPLE_200}
           strokeColor="black"
-          width={getScreenWidth(6)}
-          height={getScreenWidth(6)}
+          width={24}
+          height={24}
         />
       ) : (
-        <IconComponent
-          color={inactiveColor}
-          width={getScreenWidth(6)}
-          height={getScreenWidth(6)}
-        />
+        <IconComponent color={inactiveColor} width={24} height={24} />
       )}
       {badgeCount > 0 && (
         <View style={styles.badgeOverlay}>
@@ -109,8 +106,8 @@ function AnimatedTabBarIcon({
             type={BadgeType.DANGER}
             variant={BadgeVariant.FILLED}
             textVariant={TypographyVariant.LXXSMALL_BOLD}
-            customContainerStyle={[styles.badge, { paddingHorizontal: 0 }]}
-            customTextStyles={{ marginHorizontal: 0, lineHeight: 12 }}
+            customContainerStyle={styles.badge}
+            customTextStyles={{marginHorizontal: 0, lineHeight: 12}}
           />
         </View>
       )}
@@ -118,7 +115,8 @@ function AnimatedTabBarIcon({
   );
 }
 
-function CustomTabBar({ state, descriptors, navigation }: any) {
+function CustomTabBar({state, descriptors, navigation}: any) {
+  const insets = useSafeAreaInsets();
   const cartItems = useSelector((state: RootState) => state.cart.cartItems);
   const guestItems = useSelector(
     (state: RootState) => state.cart.guestCartItems,
@@ -153,7 +151,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
   return (
     <View style={styles.tabBarWrapper}>
-      <View style={styles.tabContainer}>
+      <View style={[styles.tabContainer, {paddingBottom: 10 + insets.bottom}]}>
         {state.routes.map((route: any, index: number) => {
           const isFocused = state.index === index;
 
@@ -211,6 +209,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
 export default function BottomNavigation() {
   const dispatch = useDispatch();
+  const insets = useSafeAreaInsets();
   const scrollY = useRef(new Animated.Value(0)).current;
   const tabBarAnim = useRef(new Animated.Value(1)).current;
   const lastScrollY = useRef(0);
@@ -222,7 +221,7 @@ export default function BottomNavigation() {
   const THRESHOLD = 10;
 
   // Distance to translate the tab bar when hiding it
-  const TAB_BAR_HEIGHT = 70;
+  const TAB_BAR_HEIGHT = 60 + insets.bottom;
 
   // Added a function to manually update scrollY
   const updateScrollY = (value: number) => {
@@ -252,7 +251,7 @@ export default function BottomNavigation() {
   };
 
   useEffect(() => {
-    const listenerId = scrollY.addListener(({ value }) => {
+    const listenerId = scrollY.addListener(({value}) => {
       // Determine scroll direction
       const currentScrollingDown = value > lastScrollY.current;
 
@@ -281,7 +280,7 @@ export default function BottomNavigation() {
   }, []);
 
   return (
-    <ScrollContext.Provider value={{ scrollY, updateScrollY }}>
+    <ScrollContext.Provider value={{scrollY, updateScrollY}}>
       <Tab.Navigator
         tabBar={props => {
           const currentRouteName = props.state.routes[props.state.index].name;
@@ -289,12 +288,14 @@ export default function BottomNavigation() {
           if (currentRouteName === 'Home') {
             if (Platform.OS === 'android') {
               StatusBar.setBackgroundColor('transparent');
-            } (ColorPalette.HOME_BLUE || '#4A90E2');
+            }
+            ColorPalette.HOME_BLUE || '#4A90E2';
             StatusBar.setBarStyle('light-content');
           } else {
             if (Platform.OS === 'android') {
               StatusBar.setBackgroundColor('transparent');
-            } ('transparent');
+            }
+            ('transparent');
             StatusBar.setBarStyle('dark-content');
           }
 

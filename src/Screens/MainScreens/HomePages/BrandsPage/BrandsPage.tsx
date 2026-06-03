@@ -13,7 +13,15 @@ import {useNavigation} from '@react-navigation/native';
 
 const toHttps = (url: string): string => {
   if (!url) return '';
-  return url.replace(/^http:\/\//i, 'https://');
+  let cleanUrl = url;
+  if (cleanUrl.includes('surf-images.b-cdn.net')) {
+    cleanUrl = cleanUrl.replace('surf-images.b-cdn.net', 'surf.mt');
+  }
+  if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+    const prefixedUrl = cleanUrl.startsWith('/') ? cleanUrl : `/${cleanUrl}`;
+    return `https://surf.mt${prefixedUrl}`;
+  }
+  return cleanUrl.replace(/^http:\/\//i, 'https://');
 };
 
 import {VendorCard} from '../../../../components/CustomComponents/VendorCard/VendorCard';

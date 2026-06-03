@@ -37,7 +37,15 @@ import { TypographyVariant } from '../../../components/MainComponents/Typography
 // ─── Helper ───────────────────────────────────────────────────────────────────
 const toHttps = (url: string): string => {
   if (!url) return '';
-  return url.replace(/^http:\/\//i, 'https://');
+  let cleanUrl = url;
+  if (cleanUrl.includes('surf-images.b-cdn.net')) {
+    cleanUrl = cleanUrl.replace('surf-images.b-cdn.net', 'surf.mt');
+  }
+  if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+    const prefixedUrl = cleanUrl.startsWith('/') ? cleanUrl : `/${cleanUrl}`;
+    return `https://surf.mt${prefixedUrl}`;
+  }
+  return cleanUrl.replace(/^http:\/\//i, 'https://');
 };
 
 /**
@@ -104,8 +112,8 @@ const MainContent = ({
   favorites,
   refreshing,
   onRefresh,
-}) => {
-  const navigation = useNavigation();
+}: any) => {
+  const navigation = useNavigation<any>();
 
   useEffect(() => {
     if (scrollViewRef && scrollViewRef.current) {
@@ -126,7 +134,7 @@ const MainContent = ({
   // ───────────────────────────────────────────────────────────────────────────
 
   const handleBannerPress = useCallback(
-    item => {
+    (item: any) => {
       const type = item.banner_type || item.type;
       const object_id = item.object_id;
       const title = item.title || item.card_name || item.banner;
@@ -155,7 +163,7 @@ const MainContent = ({
     [navigation],
   );
 
-  const renderBlock = block => {
+  const renderBlock = (block: any) => {
     const { type, title, data, background_color } = block;
 
     const blockStyle = background_color
@@ -239,7 +247,7 @@ const MainContent = ({
                 borderRadius: Spacing.XSmall,
                 height: getScreenHeight(6),
               }}
-              bgColor={ColorPalette.WelcomeBack}
+              bgColor={ColorPalette.WelcomeBack as string}
               customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
               variant={ButtonVariant.PRIMARY}
             />
@@ -403,7 +411,7 @@ const MainContent = ({
                 borderRadius: Spacing.XSmall,
                 height: getScreenHeight(6),
               }}
-              bgColor={ColorPalette.WelcomeBack}
+              bgColor={ColorPalette.WelcomeBack as string}
               customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
               variant={ButtonVariant.PRIMARY}
             />
@@ -435,7 +443,7 @@ const MainContent = ({
             <View style={{ minHeight: 200, width: '100%' }}>
               <FlatList
                 data={safeData}
-                renderItem={({ item }) => (
+                renderItem={({ item }: any) => (
                   <PromoCard
                     title={item.title}
                     description={item.description}
@@ -443,7 +451,7 @@ const MainContent = ({
                     onPress={() => handleBannerPress(item)}
                   />
                 )}
-                keyExtractor={item => item.id}
+                keyExtractor={(item: any) => item.id}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.horizontalListContainer}
@@ -513,7 +521,7 @@ const MainContent = ({
         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
         {
           useNativeDriver: true,
-          listener: event => {
+          listener: (event: any) => {
             const offsetY = event.nativeEvent.contentOffset.y;
             prevScrollY.current = offsetY;
             handleScroll(event, scrollY, prevScrollY);
@@ -535,7 +543,7 @@ const MainContent = ({
           )}
 
           {/* ── Dynamic layout blocks ── */}
-          {layout && layout.map(block => renderBlock(block))}
+          {layout && layout.map((block: any) => renderBlock(block))}
 
           {/* ── Discount banner carousel ── */}
           {safeDiscountBanners && safeDiscountBanners.length > 0 && (

@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   connectorContainer: {
     position: 'absolute',
     flexDirection: 'row',
-    top: getScreenHeight(4.5),
+    top: getScreenHeight(1.5) + getScreenWidth(13) / 2 - getScreenHeight(0.25) / 2,
     left: 0,
     right: 0,
     zIndex: 1,

@@ -539,6 +539,7 @@ const AccountScreen = () => {
                     flexDirection: 'row',
                     alignItems: 'center',
                     gap: getScreenWidth(2),
+                    flex: 1,
                   }}>
                   <LinearGradient
                     colors={['#FF4B7A', '#7C5CFF']}
@@ -548,21 +549,15 @@ const AccountScreen = () => {
                     <UserIcon width={26} height={26} style={undefined} />
                   </LinearGradient>
                   <Typography
-                    text={`${profileData?.firstname || 'User'} ${profileData?.lastname || ''
-                      }`}
+                    text={`${profileData?.firstname || 'User'} ${profileData?.lastname || ''}`}
                     variant={TypographyVariant.LMEDIUM_MEDIUM}
                     customTextStyles={{
                       fontSize: 17,
                       lineHeight: 22,
                       textAlignVertical: 'center',
+                      flex: 1,
                     }}
-                  // customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
                   />
-                  {/* <Typography
-                    text={profileData?.phone || ''}
-                    variant={TypographyVariant.LSMALL_REGULAR}
-                    customTextStyles={{ color: ColorPalette.TEXT_GREY_300 }}
-                    /> */}
                 </View>
 
                 <Button
@@ -579,14 +574,13 @@ const AccountScreen = () => {
                   bgColor={ColorPalette.ROSE_PURPLE_300}
                   customStyles={{
                     borderRadius: Spacing.Small,
-                    paddingHorizontal: Spacing.Large,
-                    height: getScreenHeight(5),
-                    // paddingTop:2.8
-                    paddingTop: getScreenHeight(0.6),
+                    paddingHorizontal: 20,
+                    height: 38,
+                    justifyContent: 'center',
+                    alignItems: 'center',
                   }}
                   customTextStyles={{
                     textAlign: 'center',
-                    // fontFamily: 'Inter',
                     fontSize: 14,
                   }}
                   withShadow
@@ -599,12 +593,14 @@ const AccountScreen = () => {
                 flexDirection: 'column',
                 gap: getScreenWidth(4),
                 paddingVertical: getScreenHeight(0.8),
+                flex: 1,
               }}>
               <View
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
                   gap: getScreenWidth(3),
+                  width: '100%',
                 }}>
                 <LinearGradient
                   colors={['#FF4B7A', '#7C5CFF']}
@@ -613,11 +609,10 @@ const AccountScreen = () => {
                   style={styles.imageContainer}>
                   <UserIcon width={26} height={26} style={undefined} />
                 </LinearGradient>
-                <View style={{ gap: getScreenHeight(0.2) }}>
+                <View style={{ flex: 1, gap: getScreenHeight(0.2) }}>
                   <Typography
                     text={`Welcome, Guest`}
                     variant={TypographyVariant.H6_SEMIBOLD}
-                  // customTextStyles={{ color: ColorPalette.TEXT_GREY_500 }}
                   />
                   <Typography
                     text={`Sign in to track your orders, wishlist and rewards.`}
@@ -625,7 +620,6 @@ const AccountScreen = () => {
                     customTextStyles={{
                       color: ColorPalette.TEXT_GREY_300,
                       paddingVertical: getScreenHeight(0.1),
-                      width: getScreenWidth(51),
                       lineHeight: 14,
                     }}
                   />
@@ -650,14 +644,13 @@ const AccountScreen = () => {
                 bgColor={ColorPalette.ROSE_PURPLE_300}
                 customStyles={{
                   borderRadius: Spacing.Small,
-                  // paddingHorizontal: Spacing.Large,
-                  width: getScreenWidth(87),
-                  height: getScreenHeight(6),
-                  alignSelf: 'stretch',
+                  width: '100%',
+                  maxWidth: 340,
+                  height: 48,
+                  alignSelf: 'center',
                 }}
                 customTextStyles={{
                   textAlign: 'center',
-                  // fontFamily: 'Inter',
                   fontSize: 14,
                 }}
                 withShadow
