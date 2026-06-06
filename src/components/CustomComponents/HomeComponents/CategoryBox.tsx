@@ -52,19 +52,26 @@ const CategoryBox: React.FC<CategoryBoxProps> = ({
     [size]
   );
 
-  const defaultTextStyle = useMemo(
+  const defaultContainerStyle = useMemo(
     () => ({
-      color: ColorPalette.TEXT_GREY_500,
-      textAlign: "center",
       width: size,
-      lineHeight: 20,
     }),
     [size]
   );
 
+  const defaultTextStyle = useMemo(
+    () => ({
+      color: ColorPalette.TEXT_GREY_500,
+      textAlign: "center",
+      width: "100%",
+      lineHeight: 20,
+    }),
+    []
+  );
+
   return (
     <TouchableOpacity
-      style={[styles.container, containerStyle]}
+      style={[styles.container, defaultContainerStyle, containerStyle]}
       onPress={onPress}
       activeOpacity={0.7}
     >
@@ -102,6 +109,7 @@ const styles = StyleSheet.create({
   textWrapper: {
     alignItems: "center",
     justifyContent: "center",
+    width: "100%",
   },
   image: {
     width: "100%",
