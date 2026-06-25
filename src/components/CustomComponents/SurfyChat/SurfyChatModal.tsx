@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -13,12 +13,12 @@ import {
   FlatList,
   Modal,
 } from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {useDispatch, useSelector} from 'react-redux';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {DashboardStackParamList} from '../../../../types/navigation';
-import {RootState, AppDispatch} from '../../../store';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { DashboardStackParamList } from '../../../../types/navigation';
+import { RootState, AppDispatch } from '../../../store';
 import {
   toggleSurfy,
   sendMessageToAi,
@@ -26,10 +26,10 @@ import {
 } from '../../../store/slices/surfySlice';
 import CloseIcon from '../../../assets/icons/CloseIcon';
 import ColorPalette from '../../../config/ColorPalette';
-import {Typography} from '../../MainComponents/Typography/Typography';
-import {TypographyVariant} from '../../MainComponents/Typography/Typography.types';
+import { Typography } from '../../MainComponents/Typography/Typography';
+import { TypographyVariant } from '../../MainComponents/Typography/Typography.types';
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const toHttps = (url: string): string => {
   if (!url) return '';
@@ -44,11 +44,13 @@ const toHttps = (url: string): string => {
   return cleanUrl.replace(/^http:\/\//i, 'https://');
 };
 
-const ChatProductCard: React.FC<{product: any}> = ({product}) => {
+const ChatProductCard: React.FC<{ product: any }> = ({ product }) => {
   const navigation =
     useNavigation<StackNavigationProp<DashboardStackParamList>>();
+  const dispatch = useDispatch<AppDispatch>();
   const handlePress = () => {
-    navigation.navigate('ProductDetail', {productId: product.product_id});
+    dispatch(toggleSurfy(false));
+    navigation.navigate('ProductDetail', { productId: product.product_id });
   };
 
   return (
@@ -61,7 +63,8 @@ const ChatProductCard: React.FC<{product: any}> = ({product}) => {
           source={{
             uri: toHttps(
               product.main_pair?.detailed?.image_path ||
-                'https://via.placeholder.com/150',
+              product.image_url ||
+              'https://via.placeholder.com/150',
             ),
           }}
           style={styles.productImage}
@@ -113,7 +116,7 @@ const ChatProductCard: React.FC<{product: any}> = ({product}) => {
 const SurfyChatModal: React.FC = () => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch<AppDispatch>();
-  const {isVisible, messages, isLoading} = useSelector(
+  const { isVisible, messages, isLoading } = useSelector(
     (state: RootState) => state.surfy,
   );
   const [inputText, setInputText] = useState('');
@@ -121,7 +124,7 @@ const SurfyChatModal: React.FC = () => {
 
   useEffect(() => {
     if (isVisible) {
-      setTimeout(() => scrollRef.current?.scrollToEnd({animated: true}), 100);
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
     }
   }, [messages, isLoading, isVisible]);
 
@@ -217,7 +220,7 @@ const SurfyChatModal: React.FC = () => {
                         horizontal
                         data={msg.products}
                         keyExtractor={item => item.product_id.toString()}
-                        renderItem={({item}) => (
+                        renderItem={({ item }) => (
                           <ChatProductCard product={item} />
                         )}
                         showsHorizontalScrollIndicator={false}
@@ -247,7 +250,7 @@ const SurfyChatModal: React.FC = () => {
             <View
               style={[
                 styles.inputContainer,
-                {paddingBottom: Math.max(insets.bottom, 15)},
+                { paddingBottom: Math.max(insets.bottom, 15) },
               ]}>
               <TextInput
                 style={styles.input}
@@ -392,7 +395,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#EFEFEF',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 4,

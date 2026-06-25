@@ -19,8 +19,8 @@ import {
   View,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {
   getCurrentLocation,
   requestLocationPermission,
@@ -42,39 +42,39 @@ import NewArrivalComponent from '../../../components/CustomComponents/HomeCompon
 import ProductCard from '../../../components/CustomComponents/HomeComponents/ProductCardComponent/ProductCard';
 import RocketDealComponent from '../../../components/CustomComponents/HomeComponents/RoctetDealComponent';
 import HomeHeader from '../../../components/CustomComponents/HomeHeaderComponent/HomeHeader';
-import { SearchBox } from '../../../components/CustomComponents/SearchBox/SearchBox';
-import { Badge } from '../../../components/MainComponents/Badges/Badge';
-import { Typography } from '../../../components/MainComponents/Typography/Typography';
+import {SearchBox} from '../../../components/CustomComponents/SearchBox/SearchBox';
+import {Badge} from '../../../components/MainComponents/Badges/Badge';
+import {Typography} from '../../../components/MainComponents/Typography/Typography';
 
 import {
   BadgeType,
   BadgeVariant,
 } from '../../../components/MainComponents/Badges/Badge.types';
-import { TypographyVariant } from '../../../components/MainComponents/Typography/Typography.types';
+import {TypographyVariant} from '../../../components/MainComponents/Typography/Typography.types';
 import ColorPalette from '../../../config/ColorPalette';
-import { getScreenHeight, getScreenWidth } from '../../../helpers/screenSize';
-import { addToCart } from '../../../services/CartService';
+import {getScreenHeight, getScreenWidth} from '../../../helpers/screenSize';
+import {addToCart} from '../../../services/CartService';
 import {
   addToWishlist,
   getWishlist,
   removeFromWishlist,
 } from '../../../services/WishlistService';
-import { Alert, Platform, ToastAndroid } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../../store';
+import {Alert, Platform, ToastAndroid} from 'react-native';
+import {useSelector, useDispatch} from 'react-redux';
+import {RootState} from '../../../store';
 import {
   setSupportInfo,
   setPageIds,
   setMinCartAmount,
   setAppConfiguration,
 } from '../../../store/slices/appSlice';
-import { addSearch } from '../../../store/slices/searchSlice';
-import { addGuestItem, addItemToCart } from '../../../store/slices/cartSlice';
+import {addSearch} from '../../../store/slices/searchSlice';
+import {addGuestItem, addItemToCart} from '../../../store/slices/cartSlice';
 import {
   createScrollAnimations,
   updateAnimationInterpolations,
 } from './animationUtils';
-import { styles, tabBarStyles } from './HomeScreen.styles';
+import {styles, tabBarStyles} from './HomeScreen.styles';
 
 import {
   bannerImages,
@@ -89,16 +89,16 @@ import {
   tabRoutes,
 } from './HomeScreen.constants';
 
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { navigate } from '../../../utils/navigationref';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {navigate} from '../../../utils/navigationref';
 
-import { ScrollContext } from '../../../navigation/stacks/BottomTabNavigator/ScrollContext';
+import {ScrollContext} from '../../../navigation/stacks/BottomTabNavigator/ScrollContext';
 
 import FeaturedComponent from '../../../components/CustomComponents/FeaturedComponent';
-import { transformHomeData } from '../../../helpers/homeDataAdaptor';
+import {transformHomeData} from '../../../helpers/homeDataAdaptor';
 import CategoryPage from './CategoryPage';
 import axios from 'axios';
-import { Button } from '../../../components/MainComponents/Button/Button';
+import {Button} from '../../../components/MainComponents/Button/Button';
 import {
   ButtonSize,
   ButtonState,
@@ -106,8 +106,8 @@ import {
   ButtonVariant,
 } from '../../../components/MainComponents/Button';
 import ChevronIcon from '../../../assets/icons/ChevronIcon';
-import { API_ENDPOINTS } from '../../../config/ApiConfig';
-import { Spacing } from '../../../config/globalStyles';
+import {API_ENDPOINTS} from '../../../config/ApiConfig';
+import {Spacing} from '../../../config/globalStyles';
 import VoiceSearchModal from '../../../components/CustomComponents/VoiceSearch/VoiceSearchModal';
 import LoadingProgressBar from '../../../components/CustomComponents/LoadingProgressBar';
 import {
@@ -116,12 +116,12 @@ import {
   popularPicksData as defaultPopularPicksData,
   rocketDealsData as defaultRocketDealsData,
 } from './HomeScreen.constants';
-import { StatusBar } from 'react-native';
+import {StatusBar} from 'react-native';
 import ScreenWrapper from '../../../components/CustomComponents/ScreenWrapper/ScreenWrapper';
 import LinearGradient from 'react-native-linear-gradient';
-import { AuthPopup } from '../../../components/CustomComponents/AuthPopUp/AuthPopUp';
-import { showToast } from '../../../components/MainComponents/Toast/ToastHelper';
-import { ToastMessages } from '../../../components/MainComponents/Toast/ToastMessages';
+import {AuthPopup} from '../../../components/CustomComponents/AuthPopUp/AuthPopUp';
+import {showToast} from '../../../components/MainComponents/Toast/ToastHelper';
+import {ToastMessages} from '../../../components/MainComponents/Toast/ToastMessages';
 import HomeErrorState from '../../../components/CustomComponents/HomeComponents/HomeErrorState/HomeErrorState';
 import UpdateAppModal from '../../../components/CustomComponents/UpdateAppModal';
 
@@ -138,7 +138,9 @@ interface TabRoute {
 }
 
 const toHttps = (url: string): string => {
-  if (!url) return '';
+  if (!url) {
+    return '';
+  }
   let cleanUrl = url;
   if (cleanUrl.includes('surf-images.b-cdn.net')) {
     cleanUrl = cleanUrl.replace('surf-images.b-cdn.net', 'surf.mt');
@@ -152,15 +154,21 @@ const toHttps = (url: string): string => {
 
 const HomeScreen = () => {
   const [searchText, setSearchText] = useState('');
-  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+  const [favorites, setFavorites] = useState<Record<string, boolean | string>>(
+    {},
+  );
   const [isVoiceModalVisible, setIsVoiceModalVisible] = useState(false);
   const userId = useSelector((state: RootState) => state.auth.userId);
-  const minCartAmount = useSelector((state: RootState) => state.app.minCartAmount);
-  const appConfiguration = useSelector((state: RootState) => state.app.appConfiguration);
+  const minCartAmount = useSelector(
+    (state: RootState) => state.app.minCartAmount,
+  );
+  const appConfiguration = useSelector(
+    (state: RootState) => state.app.appConfiguration,
+  );
   const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
-  const initialLayout = { width: Dimensions.get('window').width };
+  const initialLayout = {width: Dimensions.get('window').width};
   const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
   const hasShownAuthPopup = useRef(false);
 
@@ -168,6 +176,19 @@ const HomeScreen = () => {
   const [subAddress, setSubAddress] = useState('Please wait...');
 
   const [tabIndex, setTabIndex] = useState(0);
+  const [visitedTabs, setVisitedTabs] = useState<Record<number, boolean>>({
+    0: true,
+  });
+
+  useEffect(() => {
+    if (!visitedTabs[tabIndex]) {
+      setVisitedTabs(prev => ({
+        ...prev,
+        [tabIndex]: true,
+      }));
+    }
+  }, [tabIndex, visitedTabs]);
+
   const pagerRef = useRef<PagerView>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const [measurementsReady, setMeasurementsReady] = useState(false);
@@ -177,7 +198,7 @@ const HomeScreen = () => {
   const tabIndicatorPosition = useRef(new Animated.Value(0)).current;
   const tabIndicatorWidth = useRef(new Animated.Value(0)).current;
   // Store both width and position for each tab
-  const tabMeasurements = useRef<Array<{ width: number; position: number }>>([]);
+  const tabMeasurements = useRef<Array<{width: number; position: number}>>([]);
   const tabMeasurementsComplete = useRef(false);
 
   // Get the scroll context from BottomTabNavigator
@@ -213,7 +234,7 @@ const HomeScreen = () => {
   // Helper function to safely get tab measurements
   const getTabMeasurements = (measurements: any[], index: number) => {
     if (!measurements || !measurements[index]) {
-      return { width: 0, position: 0 };
+      return {width: 0, position: 0};
     }
     return measurements[index];
   };
@@ -224,12 +245,12 @@ const HomeScreen = () => {
       if (Platform.OS === 'android') {
         StatusBar.setBackgroundColor('transparent');
       }
-    }, [])
+    }, []),
   );
 
   // Initialize tab measurements for all tabs
   useEffect(() => {
-    tabMeasurements.current = tabRoutes.map(() => ({ width: 0, position: 0 }));
+    tabMeasurements.current = tabRoutes.map(() => ({width: 0, position: 0}));
   }, []);
 
   // Fetch location on mount
@@ -239,7 +260,7 @@ const HomeScreen = () => {
         const hasPermission = await requestLocationPermission();
         if (hasPermission) {
           const coords = await getCurrentLocation();
-          const { address: fullAddress, city } = await getAddressFromCoords(
+          const {address: fullAddress, city} = await getAddressFromCoords(
             coords.latitude,
             coords.longitude,
           );
@@ -369,7 +390,7 @@ const HomeScreen = () => {
 
   // Mapping of tab keys to category IDs
   const tabCategoryMapping: Record<string, string> = useMemo(() => {
-    const mapping: Record<string, string> = { all: '' };
+    const mapping: Record<string, string> = {all: ''};
 
     dynamicTabRoutes.forEach((tab: TabRoute) => {
       if (tab.category_id) {
@@ -396,7 +417,7 @@ const HomeScreen = () => {
       ) {
         return oldMeasurements[oldIdx];
       }
-      return { width: 0, position: 0 };
+      return {width: 0, position: 0};
     });
 
     // Check if we still have the active tab measured
@@ -505,7 +526,11 @@ const HomeScreen = () => {
         let appConfig = response.data?.app_configuration;
 
         // If not at root, check inside layout array as per user's example
-        if (!appConfig && response.data?.layout && Array.isArray(response.data.layout)) {
+        if (
+          !appConfig &&
+          response.data?.layout &&
+          Array.isArray(response.data.layout)
+        ) {
           const configBlock = response.data.layout.find(
             (b: any) => b && b.app_configuration,
           );
@@ -521,7 +546,9 @@ const HomeScreen = () => {
           const androidVer = String(appConfig.android_version || '').trim();
           const iosVer = String(appConfig.ios_version || '').trim();
 
-          console.log(`Update Check - OS: ${Platform.OS}, iOS Ver: "${iosVer}", Android Ver: "${androidVer}"`);
+          console.log(
+            `Update Check - OS: ${Platform.OS}, iOS Ver: "${iosVer}", Android Ver: "${androidVer}"`,
+          );
 
           if (Platform.OS === 'android' && androidVer && androidVer !== '1') {
             setIsUpdateModalVisible(true);
@@ -529,7 +556,6 @@ const HomeScreen = () => {
             setIsUpdateModalVisible(true);
           }
         }
-
 
         const transformed = transformHomeData(response.data);
 
@@ -540,7 +566,9 @@ const HomeScreen = () => {
 
         // If api returns empty data but we have cache, don't update cache or UI with empty data
         if (!hasContent && categoryDataCache.current[cacheKey]) {
-          if (isRequestForCurrentTab && !isPrefetch) setLoading(false);
+          if (isRequestForCurrentTab && !isPrefetch) {
+            setLoading(false);
+          }
           isFetchingRef.current[cacheKey] = false;
           return;
         }
@@ -559,11 +587,11 @@ const HomeScreen = () => {
             // Preserve main_categories if new one is empty
             const newMainCategories =
               transformed.main_categories &&
-                transformed.main_categories.length > 0
+              transformed.main_categories.length > 0
                 ? transformed.main_categories
                 : prev.main_categories && prev.main_categories.length > 0
-                  ? prev.main_categories
-                  : [];
+                ? prev.main_categories
+                : [];
 
             return {
               ...prev,
@@ -606,7 +634,9 @@ const HomeScreen = () => {
 
   useEffect(() => {
     const syncWishlist = async () => {
-      if (!userId) return;
+      if (!userId) {
+        return;
+      }
       const result = await getWishlist(userId);
       if (result.success) {
         const favs: Record<string, any> = {};
@@ -628,7 +658,9 @@ const HomeScreen = () => {
   useFocusEffect(
     useCallback(() => {
       const syncWishlist = async () => {
-        if (!userId) return;
+        if (!userId) {
+          return;
+        }
         const result = await getWishlist(userId);
         if (result.success) {
           const favs: Record<string, any> = {};
@@ -661,19 +693,19 @@ const HomeScreen = () => {
   }, [animationsReady, scrollY]);
 
   const onHeaderLayout = useCallback((event: LayoutChangeEvent) => {
-    const { height } = event.nativeEvent.layout;
+    const {height} = event.nativeEvent.layout;
     headerHeightRef.current = height;
     checkIfAnimationsReady();
   }, []);
 
   const onSearchBoxLayout = useCallback((event: LayoutChangeEvent) => {
-    const { height } = event.nativeEvent.layout;
+    const {height} = event.nativeEvent.layout;
     searchBoxHeightRef.current = height;
     checkIfAnimationsReady();
   }, []);
 
   const onTabBarLayout = useCallback((event: LayoutChangeEvent) => {
-    const { height } = event.nativeEvent.layout;
+    const {height} = event.nativeEvent.layout;
     tabBarHeightRef.current = height;
     checkIfAnimationsReady();
   }, []);
@@ -689,7 +721,9 @@ const HomeScreen = () => {
   }, []);
 
   const syncWishlist = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      return;
+    }
     try {
       const result = await getWishlist(userId);
       if (result.success) {
@@ -710,11 +744,13 @@ const HomeScreen = () => {
     }, [syncWishlist]),
   );
 
-
   const toggleFavorite = useCallback(
     async (productId: string) => {
       if (!userId) {
-        showToast(ToastMessages.CommonToastMessages.loginToAddWishlist, 'error');
+        showToast(
+          ToastMessages.CommonToastMessages.loginToAddWishlist,
+          'error',
+        );
         return;
       }
 
@@ -723,7 +759,7 @@ const HomeScreen = () => {
 
       // Optimistic update
       setFavorites(prev => {
-        const next = { ...prev };
+        const next = {...prev};
         if (isAdding) {
           next[productId] = true;
         } else {
@@ -735,8 +771,11 @@ const HomeScreen = () => {
       try {
         if (isAdding) {
           const result = await addToWishlist(userId, productId);
-          if (result && (result.success || result.result)) {
-            showToast(ToastMessages.ProductDetailScreen.wishlistAdded, 'success');
+          if (result && result.success) {
+            showToast(
+              ToastMessages.ProductDetailScreen.wishlistAdded,
+              'success',
+            );
             await syncWishlist();
           } else {
             showToast(
@@ -754,7 +793,8 @@ const HomeScreen = () => {
         } else {
           // Removal logic
           // Find the cart_id (wishlist_id) for this product
-          let cartId = typeof previousState === 'string' ? previousState : null;
+          let cartId: string | null =
+            typeof previousState === 'string' ? previousState : null;
 
           if (!cartId) {
             const allProducts = [
@@ -766,7 +806,7 @@ const HomeScreen = () => {
             const product = allProducts.find(
               p => String(p.id) === String(productId),
             );
-            cartId = product?.cart_id;
+            cartId = product?.cart_id || null;
           }
 
           if (!cartId) {
@@ -774,8 +814,8 @@ const HomeScreen = () => {
             cartId = productId;
           }
 
-          const result = await removeFromWishlist(userId, cartId);
-          if (result && (result.success || result.result)) {
+          const result = await removeFromWishlist(userId, cartId || '');
+          if (result && result.success) {
             showToast(
               ToastMessages.ProductDetailScreen.wishlistRemoved,
               'error',
@@ -811,7 +851,9 @@ const HomeScreen = () => {
   const handleAddToCart = useCallback(
     async (productId: string, productObj?: any) => {
       if (!userId) {
-        if (!apiData) return;
+        if (!apiData) {
+          return;
+        }
         let product = productObj;
         if (!product) {
           const allProducts = [
@@ -836,11 +878,11 @@ const HomeScreen = () => {
                 product.format_price || `€${product.discountedPrice || 0}`,
               main_pair: product.imageSource
                 ? {
-                  detailed: {
-                    image_path:
-                      product.imageSource?.uri || product.imageSource,
-                  },
-                }
+                    detailed: {
+                      image_path:
+                        product.imageSource?.uri || product.imageSource,
+                    },
+                  }
                 : undefined,
             }),
           );
@@ -872,12 +914,12 @@ const HomeScreen = () => {
           productId,
           productDetails: product
             ? {
-              title: product.title,
-              price: String(product.discountedPrice || product.price || '0'),
-              display_price:
-                product.format_price || `€${product.discountedPrice || 0}`,
-              image: product.imageSource?.uri || product.imageSource,
-            }
+                title: product.title,
+                price: String(product.discountedPrice || product.price || '0'),
+                display_price:
+                  product.format_price || `€${product.discountedPrice || 0}`,
+                image: product.imageSource?.uri || product.imageSource,
+              }
             : undefined,
         }),
       )
@@ -907,7 +949,7 @@ const HomeScreen = () => {
   );
 
   const handleCardPress = useCallback((productId: string) => {
-    navigate('ProductDetail' as never, { productId } as never);
+    navigate('ProductDetail' as never, {productId} as never);
   }, []);
 
   const handleCategoryPress = useCallback((category: string) => {
@@ -918,10 +960,10 @@ const HomeScreen = () => {
     return (
       <FlatList
         data={newArrivalImages}
-        renderItem={({ item }: { item: any }) => (
+        renderItem={({item}: {item: any}) => (
           <NewArrivalComponent
             imageSource={item.imageSource}
-            customStyles={{ width: getScreenWidth(28) }}
+            customStyles={{width: getScreenWidth(28)}}
             borderColors={item.borderColors}
             backgroundColors={item.backgroundColors}
             title={item.title}
@@ -931,20 +973,20 @@ const HomeScreen = () => {
         horizontal
         nestedScrollEnabled
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: getScreenWidth(3) }}
+        contentContainerStyle={{gap: getScreenWidth(3)}}
       />
     );
   };
 
   const renderRocketDealItem = useCallback(
-    ({ item }: { item: any }) => (
+    ({item}: {item: any}) => (
       <RocketDealComponent imageSource={item.imageSource} title={item.title} />
     ),
     [],
   );
 
   const renderBestSellerItem = useCallback(
-    ({ item, key, containerStyle }: any) => (
+    ({item, key, containerStyle}: any) => (
       <MemoizedBestSellerCard
         key={key || item.id}
         id={item.id}
@@ -952,7 +994,7 @@ const HomeScreen = () => {
         title={item.title}
         price={item.price}
         rating={item.rating}
-        isFavorite={favorites[item.id]}
+        isFavorite={!!favorites[item.id]}
         onToggleFavorite={() => toggleFavorite(item.id)}
         onAddToCart={() => handleAddToCart(item.id, item)}
         onCardPress={() => handleCardPress(item.id)}
@@ -968,7 +1010,7 @@ const HomeScreen = () => {
   );
 
   const renderCategoryItem = useCallback(
-    ({ item, key }: { item: any; key?: any }) => (
+    ({item, key}: {item: any; key?: any}) => (
       <MemoizedCategoryBox
         key={key || item.id}
         imageSource={item.imageSource}
@@ -984,10 +1026,10 @@ const HomeScreen = () => {
       <View style={styles.featuredContainer}>
         <FlatList
           data={featuredImages}
-          renderItem={({ item }: { item: any }) => (
+          renderItem={({item}: {item: any}) => (
             <FeaturedComponent
               imageSource={item.imageSource}
-              customStyles={{ width: getScreenWidth(28) }}
+              customStyles={{width: getScreenWidth(28)}}
               borderColors={item.borderColors}
               backgroundColors={item.backgroundColors}
             />
@@ -996,7 +1038,7 @@ const HomeScreen = () => {
           horizontal
           nestedScrollEnabled
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: getScreenWidth(3) }}
+          contentContainerStyle={{gap: getScreenWidth(3)}}
         />
       </View>
     );
@@ -1008,11 +1050,11 @@ const HomeScreen = () => {
   const renderFilterBadges = () => (
     <View style={styles.filtersContainer}>
       {[
-        { text: 'Filters', leftIcon: FilterIcon, rightIcon: ArrowDownIcon },
-        { text: 'Sort', leftIcon: SortIcon, rightIcon: ArrowDownIcon },
-        { text: 'Category', rightIcon: ArrowDownIcon, needsEllipsis: true },
+        {text: 'Filters', leftIcon: FilterIcon, rightIcon: ArrowDownIcon},
+        {text: 'Sort', leftIcon: SortIcon, rightIcon: ArrowDownIcon},
+        {text: 'Category', rightIcon: ArrowDownIcon, needsEllipsis: true},
       ].map((badge, index) => (
-        <View key={`badge-${index}`} style={{ flex: 1 }}>
+        <View key={`badge-${index}`} style={{flex: 1}}>
           <Badge
             text={badge.text}
             variant={BadgeVariant.OUTLINE}
@@ -1023,7 +1065,7 @@ const HomeScreen = () => {
             customBorderColor={ColorPalette.WelcomeBack as string}
             iconSize={16}
             customTextColor={ColorPalette.TEXT_GREY_400 as string}
-            onPress={() => { }}
+            onPress={() => {}}
           />
         </View>
       ))}
@@ -1058,7 +1100,7 @@ const HomeScreen = () => {
               <View
                 style={{
                   width: getScreenWidth(43.25),
-                  marginBottom: isLastRow && !hasMore ? 0 : 8,
+                  marginBottom: isLastRow && !hasMoreInLocal ? 0 : 8,
                 }}
                 key={product.id}>
                 <MemoizedProductCard
@@ -1071,7 +1113,7 @@ const HomeScreen = () => {
                   rating={product.rating}
                   reviewCount={product.reviewCount}
                   deliveryInfo={product.deliveryInfo}
-                  isFavorite={favorites[product.id]}
+                  isFavorite={!!favorites[product.id]}
                   onToggleFavorite={() => toggleFavorite(product.id)}
                   onAddToCart={() => handleAddToCart(product.id, product)}
                   onCardPress={() => handleCardPress(product.id)}
@@ -1082,70 +1124,72 @@ const HomeScreen = () => {
         </View>
 
         {hasMoreInLocal ? (
-          <View style={{ marginVertical: 20, alignItems: 'center' }}>
+          <View style={{marginVertical: 20, alignItems: 'center'}}>
             <Button
               text="Show More"
               onPress={() => setVisibleProductsLimit(prev => prev + 20)}
               variant={ButtonVariant.PRIMARY}
               type={ButtonType.OUTLINED}
               size={ButtonSize.MEDIUM}
-              customStyles={{ width: 150 }}
-              customTextStyles={{ color: ColorPalette.ROSE_PURPLE_300 }}
+              customStyles={{width: 150}}
+              customTextStyles={{color: ColorPalette.ROSE_PURPLE_300}}
             />
           </View>
-        ) : productsToRender.length > 20 && (
-          <Button
-            text="See All Products"
-            rightIcon={ChevronIcon}
-            iconSize={16}
-            onPress={() => handleNavigateToSearchResult('Curated')}
-            state={ButtonState.DEFAULT}
-            size={ButtonSize.LARGE}
-            type={ButtonType.PRIMARY}
-            customStyles={{
-              borderRadius: Spacing.XSmall,
-              marginTop: 12,
-            }}
-            bgColor={ColorPalette.WelcomeBack as string}
-            customTextStyles={{ color: ColorPalette.TEXT_GREY_500 as string }}
-            variant={ButtonVariant.PRIMARY}
-            imageOverlapOffset={-20}
-            leftImages={[
-              {
-                source: require('../../../assets/images/featured2.png'),
-                style: { width: 15, height: 15 },
-                containerStyle: {
-                  backgroundColor: ColorPalette.PEACH_00,
-                  borderRadius: Spacing.XXXLarge,
-                  padding: getScreenWidth(2),
-                  borderWidth: 2,
-                  borderColor: ColorPalette.WHITE as string,
+        ) : (
+          productsToRender.length > 20 && (
+            <Button
+              text="See All Products"
+              rightIcon={ChevronIcon}
+              iconSize={16}
+              onPress={() => handleNavigateToSearchResult('Curated')}
+              state={ButtonState.DEFAULT}
+              size={ButtonSize.LARGE}
+              type={ButtonType.PRIMARY}
+              customStyles={{
+                borderRadius: Spacing.XSmall,
+                marginTop: 12,
+              }}
+              bgColor={ColorPalette.WelcomeBack as string}
+              customTextStyles={{color: ColorPalette.TEXT_GREY_500 as string}}
+              variant={ButtonVariant.PRIMARY}
+              imageOverlapOffset={-20}
+              leftImages={[
+                {
+                  source: require('../../../assets/images/featured2.png'),
+                  style: {width: 15, height: 15},
+                  containerStyle: {
+                    backgroundColor: ColorPalette.PEACH_00,
+                    borderRadius: Spacing.XXXLarge,
+                    padding: getScreenWidth(2),
+                    borderWidth: 2,
+                    borderColor: ColorPalette.WHITE as string,
+                  },
                 },
-              },
-              {
-                source: require('../../../assets/images/featured2.png'),
-                style: { width: 15, height: 15 },
-                containerStyle: {
-                  backgroundColor: ColorPalette.PEACH_00,
-                  borderRadius: Spacing.XXXLarge,
-                  padding: getScreenWidth(2),
-                  borderWidth: 2,
-                  borderColor: ColorPalette.WHITE as string,
+                {
+                  source: require('../../../assets/images/featured2.png'),
+                  style: {width: 15, height: 15},
+                  containerStyle: {
+                    backgroundColor: ColorPalette.PEACH_00,
+                    borderRadius: Spacing.XXXLarge,
+                    padding: getScreenWidth(2),
+                    borderWidth: 2,
+                    borderColor: ColorPalette.WHITE as string,
+                  },
                 },
-              },
-              {
-                source: require('../../../assets/images/featured2.png'),
-                style: { width: 15, height: 15 },
-                containerStyle: {
-                  backgroundColor: ColorPalette.PEACH_00,
-                  borderRadius: Spacing.XXXLarge,
-                  padding: getScreenWidth(2),
-                  borderWidth: 2,
-                  borderColor: ColorPalette.WHITE as string,
+                {
+                  source: require('../../../assets/images/featured2.png'),
+                  style: {width: 15, height: 15},
+                  containerStyle: {
+                    backgroundColor: ColorPalette.PEACH_00,
+                    borderRadius: Spacing.XXXLarge,
+                    padding: getScreenWidth(2),
+                    borderWidth: 2,
+                    borderColor: ColorPalette.WHITE as string,
+                  },
                 },
-              },
-            ]}
-          />
+              ]}
+            />
+          )
         )}
       </View>
     );
@@ -1159,13 +1203,13 @@ const HomeScreen = () => {
         showRightSection={false}
         icon={<FlameIcon style={undefined} size={17} />}
         alternativeImage={require('../../../assets/images/rocket.png')}
-        alternativeImageStyle={{ right: 10 }}
+        alternativeImageStyle={{right: 10}}
       />
       <View style={styles.discountTimerContainer}>
         <Typography
           text="Discount ends in"
           variant={TypographyVariant.LSMALL_MEDIUM}
-          customTextStyles={{ color: ColorPalette.TEXT_GREY_100 }}
+          customTextStyles={{color: ColorPalette.TEXT_GREY_100}}
         />
         <Badge
           text="16h: 33m: 20s"
@@ -1183,7 +1227,7 @@ const HomeScreen = () => {
   const keyExtractorById = useCallback((item: any) => item.id, []);
 
   const MaltaMadeTab = () => (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <Typography
         text="Malta Made Tab Content"
         variant={TypographyVariant.H4_MEDIUM}
@@ -1192,7 +1236,7 @@ const HomeScreen = () => {
   );
 
   const WomenTab = () => (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <Typography
         text="Women Tab Content"
         variant={TypographyVariant.H4_MEDIUM}
@@ -1201,7 +1245,7 @@ const HomeScreen = () => {
   );
 
   const MenTab = () => (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <Typography
         text="Men Tab Content"
         variant={TypographyVariant.H4_MEDIUM}
@@ -1210,7 +1254,7 @@ const HomeScreen = () => {
   );
 
   const BeautyTab = () => (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <Typography
         text="Beauty Tab Content"
         variant={TypographyVariant.H4_MEDIUM}
@@ -1220,7 +1264,7 @@ const HomeScreen = () => {
 
   // Improved function to measure tab dimensions
   const measureTab = (event: any, index: number) => {
-    const { width, x } = event.nativeEvent.layout;
+    const {width, x} = event.nativeEvent.layout;
     console.log(`Tab ${index} measured: width=${width}, x=${x}`);
 
     tabMeasurements.current[index] = {
@@ -1255,7 +1299,7 @@ const HomeScreen = () => {
 
   const onPageScroll = useCallback(
     (e: any) => {
-      const { position, offset } = e.nativeEvent;
+      const {position, offset} = e.nativeEvent;
       const currentTab = tabMeasurements.current[position];
       const nextTab = tabMeasurements.current[position + 1];
 
@@ -1274,7 +1318,7 @@ const HomeScreen = () => {
           (nextTab.position +
             nextTab.width -
             (currentTab.position + currentTab.width)) *
-          Math.pow(offset, 0.4);
+            Math.pow(offset, 0.4);
 
         const newPos = x1;
         const newWidth = x2 - x1;
@@ -1316,7 +1360,7 @@ const HomeScreen = () => {
           elevation: 4,
           backgroundColor: '#FFFFFF',
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
+          shadowOffset: {width: 0, height: 2},
           shadowOpacity: 0.1,
           shadowRadius: 4,
         },
@@ -1332,7 +1376,7 @@ const HomeScreen = () => {
         ref={scrollViewRef}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 4 }}
+        contentContainerStyle={{paddingHorizontal: 4}}
         style={{
           backgroundColor: ColorPalette.WHITE,
           borderBottomWidth: 0.5,
@@ -1355,13 +1399,13 @@ const HomeScreen = () => {
                   style={{
                     alignItems: 'center',
                     opacity: 1,
-                    transform: [{ scale: isActive ? 1.05 : 1 }],
+                    transform: [{scale: isActive ? 1.05 : 1}],
                   }}>
                   {isActive ? (
                     <LinearGradient
                       colors={['rgba(217,141,250,0.8)', 'rgba(255,255,255,0)']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 0, y: 1 }}
+                      start={{x: 0, y: 0}}
+                      end={{x: 0, y: 1}}
                       style={{
                         width: getScreenWidth(11),
                         height: getScreenHeight(4.8),
@@ -1373,7 +1417,7 @@ const HomeScreen = () => {
                       }}>
                       {hasImage ? (
                         <Image
-                          source={{ uri: route.imageUrl }}
+                          source={{uri: route.imageUrl}}
                           style={{
                             width: getScreenWidth(10),
                             height: getScreenHeight(4.5),
@@ -1388,19 +1432,19 @@ const HomeScreen = () => {
                           }
                         />
                       ) : // Fallback Icon for Active State
-                        typeof IconComponent === 'function' ? (
-                          <IconComponent size={24} color={ColorPalette.WHITE} />
-                        ) : (
-                          <Image
-                            source={IconComponent}
-                            style={{
-                              width: getScreenWidth(10),
-                              height: getScreenHeight(4.5),
-                              resizeMode: 'contain',
-                              aspectRatio: 1,
-                            }}
-                          />
-                        )}
+                      typeof IconComponent === 'function' ? (
+                        <IconComponent size={24} color={ColorPalette.WHITE} />
+                      ) : (
+                        <Image
+                          source={IconComponent}
+                          style={{
+                            width: getScreenWidth(10),
+                            height: getScreenHeight(4.5),
+                            resizeMode: 'contain',
+                            aspectRatio: 1,
+                          }}
+                        />
+                      )}
                     </LinearGradient>
                   ) : (
                     <View
@@ -1412,7 +1456,7 @@ const HomeScreen = () => {
                       }}>
                       {hasImage ? (
                         <Image
-                          source={{ uri: route.imageUrl }}
+                          source={{uri: route.imageUrl}}
                           style={{
                             width: getScreenWidth(10),
                             height: getScreenHeight(4.5),
@@ -1428,23 +1472,23 @@ const HomeScreen = () => {
                           }
                         />
                       ) : // Fallback Icon for Inactive State
-                        typeof IconComponent === 'function' ? (
-                          <IconComponent
-                            size={24}
-                            color={ColorPalette.TEXT_GREY_400}
-                          />
-                        ) : (
-                          <Image
-                            source={IconComponent}
-                            style={{
-                              width: getScreenWidth(10),
-                              height: getScreenHeight(4.5),
-                              resizeMode: 'contain',
-                              aspectRatio: 1,
-                              opacity: 1,
-                            }}
-                          />
-                        )}
+                      typeof IconComponent === 'function' ? (
+                        <IconComponent
+                          size={24}
+                          color={ColorPalette.TEXT_GREY_400}
+                        />
+                      ) : (
+                        <Image
+                          source={IconComponent}
+                          style={{
+                            width: getScreenWidth(10),
+                            height: getScreenHeight(4.5),
+                            resizeMode: 'contain',
+                            aspectRatio: 1,
+                            opacity: 1,
+                          }}
+                        />
+                      )}
                     </View>
                   )}
                   <Typography
@@ -1471,15 +1515,15 @@ const HomeScreen = () => {
                 tabBarStyles.indicator,
                 {
                   width: tabIndicatorWidth,
-                  transform: [{ translateX: tabIndicatorPosition }],
+                  transform: [{translateX: tabIndicatorPosition}],
                   overflow: 'hidden',
                 },
               ]}>
               <LinearGradient
                 colors={[ColorPalette.HOME_BLUE as string, '#4facfe']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={{ flex: 1 }}
+                start={{x: 0, y: 0}}
+                end={{x: 1, y: 0}}
+                style={{flex: 1}}
               />
             </Animated.View>
           )}
@@ -1498,7 +1542,7 @@ const HomeScreen = () => {
         screen: 'Search',
         params: {
           screen: 'SearchResultScreen',
-          params: { searchQuery },
+          params: {searchQuery},
         },
       });
     },
@@ -1510,7 +1554,7 @@ const HomeScreen = () => {
       backgroundColor={ColorPalette.HOME_BLUE}
       edges={['top']}
       StatusBar={true}>
-      <View style={{ flex: 1, backgroundColor: ColorPalette.WHITE }}>
+      <View style={{flex: 1, backgroundColor: ColorPalette.WHITE}}>
         <Animated.View
           style={[animations.headerStyle]}
           onLayout={onHeaderLayout}>
@@ -1524,7 +1568,7 @@ const HomeScreen = () => {
         <Animated.View
           style={[
             animations.searchBarStyle,
-            { backgroundColor: ColorPalette.HOME_BLUE },
+            {backgroundColor: ColorPalette.HOME_BLUE},
           ]}
           onLayout={onSearchBoxLayout}>
           <TouchableOpacity
@@ -1533,7 +1577,7 @@ const HomeScreen = () => {
             <SearchBox
               value={searchText}
               onChangeText={setSearchText}
-              placeholder={`Search For "Products"`}
+              placeholder={'Search For "Products"'}
               customContainerStyle={styles.searchBoxCustom}
               customInputStyle={styles.inputCustom}
               iconColor={ColorPalette.TEXT_GREY_400}
@@ -1543,7 +1587,7 @@ const HomeScreen = () => {
               editable={false}
             />
             <View style={styles.dividerContainer}>
-              <View style={styles.divider}></View>
+              <View style={styles.divider} />
             </View>
             <View style={styles.micIconContainer}>
               <MicroPhoneFill
@@ -1561,7 +1605,7 @@ const HomeScreen = () => {
         {/* Horizontal Paging for "Amazon/Flipkart-like" smooth transitions */}
         <PagerView
           ref={pagerRef}
-          style={{ flex: 1 }}
+          style={{flex: 1}}
           initialPage={0}
           scrollEnabled={false}
           onPageScroll={onPageScroll}
@@ -1581,20 +1625,20 @@ const HomeScreen = () => {
               });
             }
           }}
-        // Prefetch/Lazy-load logic: We render current and adjacent tabs
+          // Prefetch/Lazy-load logic: We render current and adjacent tabs
         >
           {dynamicTabRoutes.map((route, index) => {
             const isTabActive = tabIndex === index;
-            const isNearby = Math.abs(tabIndex - index) <= 1;
+            const hasBeenVisited = !!visitedTabs[index];
 
             return (
-              <View key={route.key} style={{ flex: 1 }}>
+              <View key={route.key} style={{flex: 1}}>
                 {error &&
-                  !categoryDataCache.current[route.category_id || 'all'] ? (
+                !categoryDataCache.current[route.category_id || 'all'] ? (
                   <HomeErrorState
                     onRetry={() => fetchData(route.category_id)}
                   />
-                ) : isNearby ? (
+                ) : hasBeenVisited ? (
                   <CategoryPage
                     categoryId={route.category_id}
                     userId={userId || ''}
@@ -1634,7 +1678,7 @@ const HomeScreen = () => {
                     favorites={favorites}
                   />
                 ) : (
-                  <View style={{ flex: 1 }} />
+                  <View style={{flex: 1}} />
                 )}
               </View>
             );

@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useCallback, useRef, memo } from 'react';
-import { View, StyleSheet, InteractionManager } from 'react-native';
+import React, {useEffect, useState, useCallback, useRef, memo} from 'react';
+import {View, StyleSheet, InteractionManager} from 'react-native';
 import MainContent from './MainContent';
-import { transformHomeData } from '../../../helpers/homeDataAdaptor';
+import {transformHomeData} from '../../../helpers/homeDataAdaptor';
 import axios from 'axios';
-import { API_ENDPOINTS } from '../../../config/ApiConfig';
-import { useDispatch } from 'react-redux';
-import { setSupportInfo, setPageIds } from '../../../store/slices/appSlice';
+import {API_ENDPOINTS} from '../../../config/ApiConfig';
+import {useDispatch} from 'react-redux';
+import {setSupportInfo, setPageIds} from '../../../store/slices/appSlice';
 import HomeErrorState from '../../../components/CustomComponents/HomeComponents/HomeErrorState/HomeErrorState';
 
 interface CategoryPageProps {
@@ -37,10 +37,15 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
 
   const fetchData = useCallback(
     async (isRefresh = false) => {
-      if (isFetchingRef.current) return;
+      if (isFetchingRef.current) {
+        return;
+      }
 
-      if (isRefresh) setRefreshing(true);
-      else if (!data) setLoading(true);
+      if (isRefresh) {
+        setRefreshing(true);
+      } else if (!data) {
+        setLoading(true);
+      }
 
       setError(false);
       isFetchingRef.current = true;
@@ -81,7 +86,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
   );
 
   useEffect(() => {
-    if (!initialData && isActive) {
+    if (!initialData && isActive && categoryId !== '') {
       fetchData();
     }
 
@@ -92,7 +97,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
       });
       return () => task.cancel();
     }
-  }, [initialData, isActive, fetchData]);
+  }, [initialData, isActive, fetchData, categoryId]);
 
   // Sync loading state with parent progress bar
   useEffect(() => {
@@ -105,6 +110,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
   useEffect(() => {
     if (initialData) {
       setData(initialData);
+      setLoading(false);
     }
   }, [initialData]);
 
@@ -136,7 +142,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
           }
         />
       ) : (
-        <View style={{ flex: 1, backgroundColor: 'white' }} />
+        <View style={{flex: 1, backgroundColor: 'white'}} />
       )}
     </View>
   );

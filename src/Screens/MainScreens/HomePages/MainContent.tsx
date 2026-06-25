@@ -117,7 +117,11 @@ const MainContent = ({
 
   useEffect(() => {
     if (scrollViewRef && scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({ y: 0, animated: false });
+      if (typeof scrollViewRef.current.scrollToOffset === 'function') {
+        scrollViewRef.current.scrollToOffset({ offset: 0, animated: false });
+      } else if (typeof scrollViewRef.current.scrollTo === 'function') {
+        scrollViewRef.current.scrollTo({ y: 0, animated: false });
+      }
     }
   }, [layout, scrollViewRef]);
 
@@ -163,7 +167,7 @@ const MainContent = ({
     [navigation],
   );
 
-  const renderBlock = (block: any) => {
+  const renderBlock = useCallback((block: any) => {
     const { type, title, data, background_color } = block;
 
     const blockStyle = background_color
@@ -480,7 +484,7 @@ const MainContent = ({
       default:
         return null;
     }
-  };
+  }, [styles, navigation, renderCategoryItem, keyExtractorById, renderBestSellerItem, favorites, handleBannerPress]);
 
   // ── Memoised banner arrays passed into ScrollableBanner ──────────────────
   const topBannerImages = useMemo(
@@ -498,13 +502,77 @@ const MainContent = ({
   );
   // ─────────────────────────────────────────────────────────────────────────
 
+  const renderHeader = useCallback(() => {
+    if (isLoading) return null;
+    if (safeBannerSecondImages && safeBannerSecondImages.length > 0) {
+      return (
+        <View style={styles.bannerContainerOne}>
+          <ScrollableBanner
+            images={topBannerImages}
+            autoScrollInterval={5000}
+          />
+        </View>
+      );
+    }
+    return null;
+  }, [isLoading, safeBannerSecondImages, topBannerImages, styles.bannerContainerOne]);
+
+  const renderFooter = useCallback(() => {
+    if (isLoading) return null;
+    return (
+      <>
+        {/* ── Discount banner carousel ── */}
+        {safeDiscountBanners && safeDiscountBanners.length > 0 && (
+          <View style={styles.bannerContainerOne}>
+            <ScrollableBanner
+              images={discountBannerImages}
+              autoScrollInterval={5000}
+            />
+          </View>
+        )}
+
+        {/* ── Footer ── */}
+        <View style={styles.footerContainer}>
+          <Typography
+            text={'Your Local\nShopping App ❤️'}
+            variant={TypographyVariant.H1_BOLD}
+            customTextStyles={styles.footerText}
+          />
+          <View style={styles.footerLine} />
+          <Typography
+            text="Surf Malta"
+            variant={TypographyVariant.LMEDIUM_BOLD}
+            customTextStyles={styles.footerText}
+          />
+        </View>
+      </>
+    );
+  }, [isLoading, safeDiscountBanners, discountBannerImages, styles.bannerContainerOne, styles.footerContainer, styles.footerText, styles.footerLine]);
+
+  const renderEmpty = useCallback(() => {
+    if (isLoading) {
+      return <View style={{ flex: 1, minHeight: getScreenHeight(80) }} />;
+    }
+    return null;
+  }, [isLoading]);
+
+  const renderItem = useCallback(({ item }: { item: any }) => {
+    return renderBlock(item);
+  }, [renderBlock]);
+
   return (
-    <Animated.ScrollView
+    <Animated.FlatList
       ref={scrollViewRef}
+      data={isLoading ? [] : layout || []}
+      renderItem={renderItem}
+      keyExtractor={(item: any, index: number) => item.layout_id || String(index)}
       style={styles.mainContainer}
       contentContainerStyle={[styles.scrollContent, animations.contentStyle]}
       showsVerticalScrollIndicator={false}
       scrollEventThrottle={16}
+      ListHeaderComponent={renderHeader}
+      ListFooterComponent={renderFooter}
+      ListEmptyComponent={renderEmpty}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -527,51 +595,8 @@ const MainContent = ({
             handleScroll(event, scrollY, prevScrollY);
           },
         },
-      )}>
-      {isLoading ? (
-        <View style={{ flex: 1, minHeight: getScreenHeight(80) }} />
-      ) : (
-        <>
-          {/* ── Top static banner ── */}
-          {safeBannerSecondImages && safeBannerSecondImages.length > 0 && (
-            <View style={styles.bannerContainerOne}>
-              <ScrollableBanner
-                images={topBannerImages}
-                autoScrollInterval={5000}
-              />
-            </View>
-          )}
-
-          {/* ── Dynamic layout blocks ── */}
-          {layout && layout.map((block: any) => renderBlock(block))}
-
-          {/* ── Discount banner carousel ── */}
-          {safeDiscountBanners && safeDiscountBanners.length > 0 && (
-            <View style={styles.bannerContainerOne}>
-              <ScrollableBanner
-                images={discountBannerImages}
-                autoScrollInterval={5000}
-              />
-            </View>
-          )}
-        </>
       )}
-
-      {/* ── Footer ── */}
-      <View style={styles.footerContainer}>
-        <Typography
-          text={'Your Local\nShopping App ❤️'}
-          variant={TypographyVariant.H1_BOLD}
-          customTextStyles={styles.footerText}
-        />
-        <View style={styles.footerLine} />
-        <Typography
-          text="Surf Malta"
-          variant={TypographyVariant.LMEDIUM_BOLD}
-          customTextStyles={styles.footerText}
-        />
-      </View>
-    </Animated.ScrollView>
+    />
   );
 };
 
